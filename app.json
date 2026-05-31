@@ -1,0 +1,88 @@
+{
+  "expo": {
+    "name": "WashGo",
+    "slug": "washgo-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "washgo",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "WashGo a besoin de votre position pour vous proposer un laveur à proximité."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "VIBRATE",
+        "POST_NOTIFICATIONS"
+      ],
+      "package": "com.washgo.mobile",
+      "googleServicesFile": "./google-services.json",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAkJN68qNptboZqbOMV7JOvdNUEE1aoFOk"
+        }
+      }
+    },
+    "plugins": [
+      "expo-dev-client",
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      [
+        "expo-maps",
+        {
+          "android": {
+            "googleMapsApiKey": "AIzaSyAkJN68qNptboZqbOMV7JOvdNUEE1aoFOk"
+          }
+        }
+      ],
+      "expo-router",
+      "expo-notifications",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "WashGo a besoin de votre position pour vous proposer un laveur à proximité."
+        }
+      ],
+      "@react-native-firebase/messaging"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0a9d1907-b652-473f-8152-38aac21ac293"
+      }
+    },
+
+
+    
+  "expo": {
+    "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging"
+    ],
+    "android": {
+      "googleServicesFile": "./google-services.json",
+      "package": "com.washgo.app"
+    }
+  },
+
+
+    "owner": "labhalmehdi"
+  }
+}
