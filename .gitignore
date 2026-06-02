@@ -40,3 +40,7 @@ yarn-error.*
 /ios
 /android
 
+# sensitive files - never commit
+.env
+google-services.json
+
