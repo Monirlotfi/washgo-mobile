@@ -34,7 +34,7 @@
         "android.permission.ACCESS_FINE_LOCATION"
       ],
       "package": "com.washgo.mobile",
-      "googleServicesFile": "./google-services.json",
+      
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyAkJN68qNptboZqbOMV7JOvdNUEE1aoFOk"
