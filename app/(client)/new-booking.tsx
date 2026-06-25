@@ -10,6 +10,7 @@ import * as Location from 'expo-location';
 import { useVehicles } from '../../src/hooks/useVehicles';
 import { useCreateBooking, useVehiclePricing } from '../../src/hooks/useBookings';
 import { Vehicle, WashType } from '../../src/types/api.types';
+import { useColors, AppColors } from '../../src/theme/colors';
 
 const NOTE_CHIPS = [
   'Coffre très sale', 'Produits spécifiques', 'Démontage coussin',
@@ -23,6 +24,8 @@ const WASH_TYPES: { value: WashType; label: string; description: string; emoji: 
 ];
 
 export default function NewBookingScreen() {
+  const colors = useColors();
+  const s = styles(colors);
   const router = useRouter();
   const vehicles = useVehicles();
   const createBooking = useCreateBooking();
@@ -97,10 +100,10 @@ export default function NewBookingScreen() {
 
   if (locError) {
     return (
-      <SafeAreaView style={styles.centered}>
-        <Text style={styles.errorText}>{locError}</Text>
+      <SafeAreaView style={s.centered}>
+        <Text style={s.errorText}>{locError}</Text>
         <Pressable onPress={() => router.back()}>
-          <Text style={styles.link}>Retour</Text>
+          <Text style={s.link}>Retour</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -108,9 +111,9 @@ export default function NewBookingScreen() {
 
   if (!location) {
     return (
-      <SafeAreaView style={styles.centered}>
-        <ActivityIndicator size="large" color="#0066FF" />
-        <Text style={{ marginTop: 12, color: '#666' }}>Récupération de votre position...</Text>
+      <SafeAreaView style={s.centered}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ marginTop: 12, color: colors.textSecondary }}>Récupération de votre position...</Text>
       </SafeAreaView>
     );
   }
@@ -131,21 +134,21 @@ export default function NewBookingScreen() {
             title: 'Votre position',
           }]}
         />
-        <View style={styles.mapOverlayTop}>
-          <Pressable style={styles.mapBackBtn} onPress={() => router.back()}>
-            <Text style={styles.mapBackText}>← Retour</Text>
+        <View style={s.mapOverlayTop}>
+          <Pressable style={s.mapBackBtn} onPress={() => router.back()}>
+            <Text style={s.mapBackText}>← Retour</Text>
           </Pressable>
-          <View style={styles.mapTitleCard}>
-            <Text style={styles.mapTitleText}>Confirmez votre position</Text>
+          <View style={s.mapTitleCard}>
+            <Text style={s.mapTitleText}>Confirmez votre position</Text>
           </View>
         </View>
-        <View style={styles.mapOverlayBottom}>
-          <View style={styles.mapAddressCard}>
-            <Text style={styles.mapAddressLabel}>📍 Adresse détectée</Text>
-            <Text style={styles.mapAddressValue}>{addressLabel}</Text>
+        <View style={s.mapOverlayBottom}>
+          <View style={s.mapAddressCard}>
+            <Text style={s.mapAddressLabel}>📍 Adresse détectée</Text>
+            <Text style={s.mapAddressValue}>{addressLabel}</Text>
           </View>
-          <Pressable style={styles.mapConfirmBtn} onPress={() => setLocationConfirmed(true)}>
-            <Text style={styles.mapConfirmBtnText}>✅ Confirmer cette position</Text>
+          <Pressable style={s.mapConfirmBtn} onPress={() => setLocationConfirmed(true)}>
+            <Text style={s.mapConfirmBtnText}>✅ Confirmer cette position</Text>
           </Pressable>
         </View>
       </View>
@@ -156,17 +159,17 @@ export default function NewBookingScreen() {
   const currentPrice = pricing.data ? pricing.data[washType] : null;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <View style={styles.header}>
+    <SafeAreaView style={s.container} edges={['top', 'bottom']}>
+      <View style={s.header}>
         <Pressable onPress={() => setLocationConfirmed(false)}>
-          <Text style={styles.back}>← Position</Text>
+          <Text style={s.back}>← Position</Text>
         </Pressable>
-        <Text style={styles.title}>Nouveau lavage</Text>
+        <Text style={s.title}>Nouveau lavage</Text>
         <View style={{ width: 60 }} />
       </View>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 16 }}>
-        <View style={styles.miniMapWrapper}>
+        <View style={s.miniMapWrapper}>
           <GoogleMaps.View
             style={StyleSheet.absoluteFillObject}
             cameraPosition={{
@@ -179,73 +182,74 @@ export default function NewBookingScreen() {
             }]}
             uiSettings={{ scrollGesturesEnabled: false, zoomGesturesEnabled: false }}
           />
-          <View style={styles.miniMapBadge}>
-            <Text style={styles.miniMapBadgeText}>📍 {addressLabel}</Text>
+          <View style={s.miniMapBadge}>
+            <Text style={s.miniMapBadgeText}>📍 {addressLabel}</Text>
           </View>
-          <Pressable style={styles.changeLocationBtn} onPress={() => setLocationConfirmed(false)}>
-            <Text style={styles.changeLocationText}>Modifier</Text>
+          <Pressable style={s.changeLocationBtn} onPress={() => setLocationConfirmed(false)}>
+            <Text style={s.changeLocationText}>Modifier</Text>
           </Pressable>
         </View>
 
-        <View style={styles.content}>
-          <Text style={styles.sectionTitle}>1. Choisissez votre véhicule</Text>
+        <View style={s.content}>
+          <Text style={s.sectionTitle}>1. Choisissez votre véhicule</Text>
           {vehicles.data?.map((v) => (
             <Pressable
               key={v.id}
-              style={[styles.vehicleOption, selectedVehicle?.id === v.id && styles.vehicleOptionActive]}
+              style={[s.vehicleOption, selectedVehicle?.id === v.id && s.vehicleOptionActive]}
               onPress={() => setSelectedVehicle(v)}
             >
-              <Text style={styles.vehicleEmoji}>{categoryEmoji(v.category, v.size)}</Text>
+              <Text style={s.vehicleEmoji}>{categoryEmoji(v.category, v.size)}</Text>
               <View style={{ flex: 1 }}>
-                <Text style={styles.vehicleName}>{v.brand} {v.model}</Text>
-                <Text style={styles.vehiclePlate}>{v.plate}</Text>
+                <Text style={s.vehicleName}>{v.brand} {v.model}</Text>
+                <Text style={s.vehiclePlate}>{v.plate}</Text>
               </View>
-              <View style={[styles.radio, selectedVehicle?.id === v.id && styles.radioActive]}>
-                {selectedVehicle?.id === v.id && <View style={styles.radioDot} />}
+              <View style={[s.radio, selectedVehicle?.id === v.id && s.radioActive]}>
+                {selectedVehicle?.id === v.id && <View style={s.radioDot} />}
               </View>
             </Pressable>
           ))}
 
-          <Text style={styles.sectionTitle}>2. Type de lavage</Text>
+          <Text style={s.sectionTitle}>2. Type de lavage</Text>
           {pricing.isLoading ? <ActivityIndicator /> : (
             WASH_TYPES.map((w) => (
               <Pressable
                 key={w.value}
-                style={[styles.washTypeCard, washType === w.value && styles.washTypeCardActive]}
+                style={[s.washTypeCard, washType === w.value && s.washTypeCardActive]}
                 onPress={() => setWashType(w.value)}
               >
-                <Text style={styles.washTypeEmoji}>{w.emoji}</Text>
+                <Text style={s.washTypeEmoji}>{w.emoji}</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.washTypeLabel, washType === w.value && styles.washTypeLabelActive]}>
+                  <Text style={[s.washTypeLabel, washType === w.value && s.washTypeLabelActive]}>
                     {w.label}
                   </Text>
-                  <Text style={styles.washTypeDescription}>{w.description}</Text>
+                  <Text style={s.washTypeDescription}>{w.description}</Text>
                 </View>
-                <Text style={[styles.washTypePrice, washType === w.value && styles.washTypePriceActive]}>
+                <Text style={[s.washTypePrice, washType === w.value && s.washTypePriceActive]}>
                   {pricing.data ? `${pricing.data[w.value] / 100} DH` : '-'}
                 </Text>
               </Pressable>
             ))
           )}
 
-          <Text style={styles.sectionTitle}>3. Détails (optionnel)</Text>
-          <Text style={styles.helpText}>Sélectionnez les options applicables ou écrivez votre demande spécifique.</Text>
-          <View style={styles.chipsContainer}>
+          <Text style={s.sectionTitle}>3. Détails (optionnel)</Text>
+          <Text style={s.helpText}>Sélectionnez les options applicables ou écrivez votre demande spécifique.</Text>
+          <View style={s.chipsContainer}>
             {NOTE_CHIPS.map((chip) => (
               <Pressable
                 key={chip}
-                style={[styles.chip, isChipSelected(chip) && styles.chipActive]}
+                style={[s.chip, isChipSelected(chip) && s.chipActive]}
                 onPress={() => toggleChip(chip)}
               >
-                <Text style={[styles.chipText, isChipSelected(chip) && styles.chipTextActive]}>
+                <Text style={[s.chipText, isChipSelected(chip) && s.chipTextActive]}>
                   {isChipSelected(chip) ? '✓ ' : '+ '}{chip}
                 </Text>
               </Pressable>
             ))}
           </View>
           <TextInput
-            style={styles.notesInput}
+            style={s.notesInput}
             placeholder="Ajouter une demande spécifique..."
+            placeholderTextColor={colors.textPlaceholder}
             value={notes}
             onChangeText={setNotes}
             multiline
@@ -254,17 +258,17 @@ export default function NewBookingScreen() {
         </View>
       </ScrollView>
 
-      <View style={styles.bottomBar}>
+      <View style={s.bottomBar}>
         <View>
-          <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalPrice}>{currentPrice ? `${currentPrice / 100} DH` : '-'}</Text>
+          <Text style={s.totalLabel}>Total</Text>
+          <Text style={s.totalPrice}>{currentPrice ? `${currentPrice / 100} DH` : '-'}</Text>
         </View>
         <Pressable
-          style={[styles.ctaButton, (!selectedVehicle || createBooking.isPending) && { opacity: 0.5 }]}
+          style={[s.ctaButton, (!selectedVehicle || createBooking.isPending) && { opacity: 0.5 }]}
           onPress={onConfirm}
           disabled={!selectedVehicle || createBooking.isPending}
         >
-          <Text style={styles.ctaButtonText}>
+          <Text style={s.ctaButtonText}>
             {createBooking.isPending ? 'Envoi...' : 'Commander'}
           </Text>
         </Pressable>
@@ -281,11 +285,11 @@ function categoryEmoji(category: string | null, size: string): string {
   return '🚗';
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const styles = (colors: AppColors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  errorText: { color: '#FF3B30', fontSize: 16, marginBottom: 12 },
-  link: { color: '#0066FF', fontWeight: '600' },
+  errorText: { color: colors.danger, fontSize: 16, marginBottom: 12 },
+  link: { color: colors.primary, fontWeight: '600' },
   mapOverlayTop: {
     position: 'absolute', top: 0, left: 0, right: 0,
     paddingTop: 52, paddingHorizontal: 16, paddingBottom: 12,
@@ -296,32 +300,32 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15, shadowRadius: 4, elevation: 3,
   },
-  mapBackText: { color: '#0066FF', fontWeight: '600', fontSize: 14 },
+  mapBackText: { color: colors.primary, fontWeight: '600', fontSize: 14 },
   mapTitleCard: {
     backgroundColor: 'rgba(255,255,255,0.95)', paddingHorizontal: 16,
     paddingVertical: 10, borderRadius: 12, alignSelf: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
   },
-  mapTitleText: { fontSize: 15, fontWeight: '700', color: '#1A1A1A' },
+  mapTitleText: { fontSize: 15, fontWeight: '700', color: colors.text },
   mapOverlayBottom: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: '#fff', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32,
+    backgroundColor: colors.background, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32,
     borderTopLeftRadius: 20, borderTopRightRadius: 20,
     shadowColor: '#000', shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.08, shadowRadius: 12, elevation: 8,
   },
   mapAddressCard: { marginBottom: 16 },
-  mapAddressLabel: { fontSize: 12, color: '#666', marginBottom: 4 },
-  mapAddressValue: { fontSize: 16, fontWeight: '600', color: '#1A1A1A' },
-  mapConfirmBtn: { backgroundColor: '#0066FF', padding: 16, borderRadius: 14, alignItems: 'center' },
-  mapConfirmBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  mapAddressLabel: { fontSize: 12, color: colors.textSecondary, marginBottom: 4 },
+  mapAddressValue: { fontSize: 16, fontWeight: '600', color: colors.text },
+  mapConfirmBtn: { backgroundColor: colors.primary, padding: 16, borderRadius: 14, alignItems: 'center' },
+  mapConfirmBtnText: { color: colors.textOnPrimary, fontSize: 16, fontWeight: '700' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#EEE',
+    borderBottomWidth: 1, borderBottomColor: colors.border,
   },
-  back: { color: '#0066FF', fontSize: 16, fontWeight: '600' },
+  back: { color: colors.primary, fontSize: 16, fontWeight: '600' },
   title: { fontSize: 18, fontWeight: '700' },
   miniMapWrapper: { height: 180, position: 'relative', overflow: 'hidden' },
   miniMapBadge: {
@@ -329,62 +333,62 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.95)',
     paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, elevation: 3,
   },
-  miniMapBadgeText: { fontSize: 12, color: '#333', fontWeight: '500' },
+  miniMapBadgeText: { fontSize: 12, color: colors.text, fontWeight: '500' },
   changeLocationBtn: {
     position: 'absolute', bottom: 10, right: 12,
-    backgroundColor: '#0066FF', paddingHorizontal: 10, paddingVertical: 6,
+    backgroundColor: colors.primary, paddingHorizontal: 10, paddingVertical: 6,
     borderRadius: 8, elevation: 3,
   },
-  changeLocationText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+  changeLocationText: { color: colors.textOnPrimary, fontSize: 12, fontWeight: '700' },
   content: { padding: 20 },
   sectionTitle: { fontSize: 17, fontWeight: '700', marginTop: 8, marginBottom: 12 },
-  helpText: { fontSize: 13, color: '#666', marginBottom: 12 },
+  helpText: { fontSize: 13, color: colors.textSecondary, marginBottom: 12 },
   vehicleOption: {
     flexDirection: 'row', alignItems: 'center', padding: 12,
-    backgroundColor: '#F4F5F7', borderRadius: 12, marginBottom: 8,
+    backgroundColor: colors.inputBackground, borderRadius: 12, marginBottom: 8,
     borderWidth: 2, borderColor: 'transparent', gap: 12,
   },
-  vehicleOptionActive: { borderColor: '#0066FF', backgroundColor: '#E8F1FF' },
+  vehicleOptionActive: { borderColor: colors.primary, backgroundColor: '#E8F1FF' },
   vehicleEmoji: { fontSize: 28 },
   vehicleName: { fontSize: 15, fontWeight: '600' },
-  vehiclePlate: { fontSize: 13, color: '#666', marginTop: 2 },
+  vehiclePlate: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
   washTypeCard: {
     flexDirection: 'row', alignItems: 'center', padding: 14,
-    backgroundColor: '#F4F5F7', borderRadius: 12, marginBottom: 8,
+    backgroundColor: colors.inputBackground, borderRadius: 12, marginBottom: 8,
     borderWidth: 2, borderColor: 'transparent', gap: 12,
   },
-  washTypeCardActive: { borderColor: '#0066FF', backgroundColor: '#E8F1FF' },
+  washTypeCardActive: { borderColor: colors.primary, backgroundColor: '#E8F1FF' },
   washTypeEmoji: { fontSize: 28 },
-  washTypeLabel: { fontSize: 16, fontWeight: '700', color: '#333' },
-  washTypeLabelActive: { color: '#0066FF' },
-  washTypeDescription: { fontSize: 12, color: '#666', marginTop: 2 },
-  washTypePrice: { fontSize: 16, fontWeight: '700', color: '#666' },
-  washTypePriceActive: { color: '#0066FF' },
+  washTypeLabel: { fontSize: 16, fontWeight: '700', color: colors.text },
+  washTypeLabelActive: { color: colors.primary },
+  washTypeDescription: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+  washTypePrice: { fontSize: 16, fontWeight: '700', color: colors.textSecondary },
+  washTypePriceActive: { color: colors.primary },
   radio: {
     width: 22, height: 22, borderRadius: 11,
-    borderWidth: 2, borderColor: '#999', justifyContent: 'center', alignItems: 'center',
+    borderWidth: 2, borderColor: colors.textPlaceholder, justifyContent: 'center', alignItems: 'center',
   },
-  radioActive: { borderColor: '#0066FF' },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#0066FF' },
+  radioActive: { borderColor: colors.primary },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary },
   chipsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   chip: {
     paddingHorizontal: 12, paddingVertical: 8,
-    backgroundColor: '#F4F5F7', borderRadius: 20, borderWidth: 1, borderColor: '#E0E0E0',
+    backgroundColor: colors.inputBackground, borderRadius: 20, borderWidth: 1, borderColor: colors.border,
   },
-  chipActive: { backgroundColor: '#0066FF', borderColor: '#0066FF' },
-  chipText: { fontSize: 13, color: '#333' },
-  chipTextActive: { color: '#fff', fontWeight: '600' },
+  chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  chipText: { fontSize: 13, color: colors.text },
+  chipTextActive: { color: colors.textOnPrimary, fontWeight: '600' },
   notesInput: {
-    backgroundColor: '#F4F5F7', padding: 14, borderRadius: 10,
+    backgroundColor: colors.inputBackground, padding: 14, borderRadius: 10,
     fontSize: 14, minHeight: 80, textAlignVertical: 'top',
   },
   bottomBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#fff', paddingHorizontal: 16, paddingTop: 12,
-    paddingBottom: 16, borderTopWidth: 1, borderTopColor: '#EEE',
+    backgroundColor: colors.background, paddingHorizontal: 16, paddingTop: 12,
+    paddingBottom: 16, borderTopWidth: 1, borderTopColor: colors.border,
   },
-  totalLabel: { fontSize: 12, color: '#666' },
-  totalPrice: { fontSize: 22, fontWeight: '700', color: '#0066FF' },
-  ctaButton: { backgroundColor: '#0066FF', paddingHorizontal: 28, paddingVertical: 14, borderRadius: 10 },
-  ctaButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  totalLabel: { fontSize: 12, color: colors.textSecondary },
+  totalPrice: { fontSize: 22, fontWeight: '700', color: colors.primary },
+  ctaButton: { backgroundColor: colors.primary, paddingHorizontal: 28, paddingVertical: 14, borderRadius: 10 },
+  ctaButtonText: { color: colors.textOnPrimary, fontSize: 16, fontWeight: '700' },
 });

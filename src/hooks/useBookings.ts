@@ -10,6 +10,8 @@ export function useBookings() {
   return useQuery({
     queryKey: BOOKINGS_KEY,
     queryFn: bookingsApi.list,
+    staleTime: 10 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
@@ -17,6 +19,8 @@ export function useBookingsHistory() {
   return useQuery({
     queryKey: BOOKINGS_HISTORY_KEY,
     queryFn: bookingsApi.history,
+    staleTime: 30 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }
 
@@ -25,7 +29,14 @@ export function useBooking(id: string | null) {
     queryKey: bookingKey(id ?? ''),
     queryFn: () => bookingsApi.get(id!),
     enabled: !!id,
-    refetchInterval: 5000,
+    staleTime: 3 * 1000,
+    gcTime: 2 * 60 * 1000,
+    //refetchInterval: 5000,
+    refetchInterval: (query) => {
+      if (!query.state.data) return 5000;
+      const activeStatuses = ['PENDING', 'ACCEPTED', 'ARRIVED', 'IN_PROGRESS', 'AWAITING_CLIENT_CONFIRMATION'];
+      return activeStatuses.includes(query.state.data.status) ? 5000 : false;
+    },
   });
 }
 
@@ -39,7 +50,12 @@ export function useActiveBooking() {
       );
       return active ?? null;
     },
-    refetchInterval: 5000,
+    staleTime: 5 * 1000,
+    gcTime: 2 * 60 * 1000,
+    //refetchInterval: 5000,
+    refetchInterval: (query) => {
+      return query.state.data ? 5000 : false;
+    },
   });
 }
 
@@ -86,5 +102,7 @@ export function useVehiclePricing(vehicleId: string | null) {
     queryKey: ['booking-pricing', vehicleId],
     queryFn: () => bookingsApi.getPricing(vehicleId!),
     enabled: !!vehicleId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 }

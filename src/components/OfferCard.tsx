@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import StarRating from './StarRating';
 import { OfferWithWasher } from '../types/api.types';
+import { useColors, AppColors } from '../theme/colors';
 
 interface Props {
   offer: OfferWithWasher;
@@ -15,6 +16,8 @@ export default function OfferCard({
   onChoose,
   isLoading,
 }: Props) {
+  const colors = useColors();
+  const s = styles(colors);
   const proposedDH = offer.proposedPriceMAD / 100;
   const suggestedDH = suggestedPriceMAD / 100;
   const diff = proposedDH - suggestedDH;
@@ -22,15 +25,15 @@ export default function OfferCard({
   const isMoreExpensive = diff > 0;
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <View style={styles.washerInfo}>
-          <Text style={styles.washerName}>{offer.washer.user.fullName}</Text>
-          <View style={styles.ratingRow}>
+    <View style={s.card}>
+      <View style={s.header}>
+        <View style={s.washerInfo}>
+          <Text style={s.washerName}>{offer.washer.user.fullName}</Text>
+          <View style={s.ratingRow}>
             {offer.washer.avgRating > 0 ? (
               <>
                 <StarRating value={Math.round(offer.washer.avgRating)} size={12} readonly />
-                <Text style={styles.ratingText}>
+                <Text style={s.ratingText}>
                   {offer.washer.avgRating.toFixed(1)}
                   {' · '}
                   {offer.washer.totalBookings} course
@@ -38,34 +41,34 @@ export default function OfferCard({
                 </Text>
               </>
             ) : (
-              <Text style={styles.newWasher}>🆕 Nouveau laveur</Text>
+              <Text style={s.newWasher}>🆕 Nouveau laveur</Text>
             )}
           </View>
         </View>
-        <View style={styles.priceContainer}>
-          <Text style={styles.priceValue}>{proposedDH} DH</Text>
+        <View style={s.priceContainer}>
+          <Text style={s.priceValue}>{proposedDH} DH</Text>
           {isCheaper && (
-            <Text style={styles.priceCheaper}>{diff} DH</Text>
+            <Text style={s.priceCheaper}>{diff} DH</Text>
           )}
           {isMoreExpensive && (
-            <Text style={styles.priceMoreExp}>+{diff} DH</Text>
+            <Text style={s.priceMoreExp}>+{diff} DH</Text>
           )}
         </View>
       </View>
 
-      <View style={styles.statsRow}>
-        <View style={styles.stat}>
-          <Text style={styles.statLabel}>⏱ Arrive en</Text>
-          <Text style={styles.statValue}>~{offer.estimatedEtaMin} min</Text>
+      <View style={s.statsRow}>
+        <View style={s.stat}>
+          <Text style={s.statLabel}>⏱ Arrive en</Text>
+          <Text style={s.statValue}>~{offer.estimatedEtaMin} min</Text>
         </View>
-        <View style={styles.statDivider} />
-        <View style={styles.stat}>
-          <Text style={styles.statLabel}>💰 vs suggéré</Text>
+        <View style={s.statDivider} />
+        <View style={s.stat}>
+          <Text style={s.statLabel}>💰 vs suggéré</Text>
           <Text
             style={[
-              styles.statValue,
-              isCheaper && styles.statValueCheaper,
-              isMoreExpensive && styles.statValueMoreExp,
+              s.statValue,
+              isCheaper && s.statValueCheaper,
+              isMoreExpensive && s.statValueMoreExp,
             ]}
           >
             {diff === 0 ? '= ' + suggestedDH : (diff > 0 ? '+' : '') + diff} DH
@@ -74,11 +77,11 @@ export default function OfferCard({
       </View>
 
       <Pressable
-        style={[styles.chooseBtn, isLoading && { opacity: 0.5 }]}
+        style={[s.chooseBtn, isLoading && { opacity: 0.5 }]}
         onPress={onChoose}
         disabled={isLoading}
       >
-        <Text style={styles.chooseBtnText}>
+        <Text style={s.chooseBtnText}>
           {isLoading ? 'Sélection...' : 'Choisir ce laveur'}
         </Text>
       </Pressable>
@@ -86,14 +89,14 @@ export default function OfferCard({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = (colors: AppColors) => StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderRadius: 14,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#EEE',
+    borderColor: colors.border,
   },
   header: {
     flexDirection: 'row',
@@ -102,19 +105,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   washerInfo: { flex: 1, marginRight: 12 },
-  washerName: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  washerName: { fontSize: 16, fontWeight: '700', marginBottom: 4, color: colors.text },
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  ratingText: { fontSize: 12, color: '#666', fontWeight: '500' },
-  newWasher: { fontSize: 12, color: '#0066FF', fontWeight: '600' },
+  ratingText: { fontSize: 12, color: colors.textSecondary, fontWeight: '500' },
+  newWasher: { fontSize: 12, color: colors.primary, fontWeight: '600' },
   priceContainer: { alignItems: 'flex-end' },
   priceValue: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#0066FF',
+    color: colors.primary,
   },
   priceCheaper: {
     fontSize: 12,
@@ -130,23 +133,23 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    backgroundColor: '#F4F5F7',
+    backgroundColor: colors.inputBackground,
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
     alignItems: 'center',
   },
   stat: { flex: 1, alignItems: 'center' },
-  statDivider: { width: 1, height: 32, backgroundColor: '#DDD' },
-  statLabel: { fontSize: 11, color: '#666', marginBottom: 4 },
-  statValue: { fontSize: 14, fontWeight: '700', color: '#333' },
+  statDivider: { width: 1, height: 32, backgroundColor: colors.border },
+  statLabel: { fontSize: 11, color: colors.textSecondary, marginBottom: 4 },
+  statValue: { fontSize: 14, fontWeight: '700', color: colors.text },
   statValueCheaper: { color: '#34C759' },
   statValueMoreExp: { color: '#FF9500' },
   chooseBtn: {
-    backgroundColor: '#0066FF',
+    backgroundColor: colors.primary,
     padding: 14,
     borderRadius: 10,
     alignItems: 'center',
   },
-  chooseBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  chooseBtnText: { color: colors.textOnPrimary, fontSize: 15, fontWeight: '700' },
 });

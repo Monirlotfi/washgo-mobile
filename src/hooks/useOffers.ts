@@ -12,7 +12,13 @@ export function useBookingOffers(bookingId: string | null, enabled = true) {
     queryKey: [...OFFERS_KEY, bookingId],
     queryFn: () => offersApi.listForBooking(bookingId!),
     enabled: !!bookingId && enabled,
-    refetchInterval: 5000,
+    staleTime: 5 * 1000,
+    gcTime: 1 * 60 * 1000,
+    //refetchInterval: 5000,
+    refetchInterval: (query) => {
+      if (!query.state.data) return 5000;
+      return query.state.data.length > 0 ? 5000 : 10000;
+    },
   });
 }
 
@@ -22,7 +28,10 @@ export function useMyPendingOffers(enabled = true) {
     queryKey: MY_OFFERS_KEY,
     queryFn: () => offersApi.myPendingOffers(),
     enabled,
-    refetchInterval: 5000,
+    staleTime: 5 * 1000,
+    gcTime: 2 * 60 * 1000,
+    //refetchInterval: 5000,
+    refetchInterval: 10000,
   });
 }
 

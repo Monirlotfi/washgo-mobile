@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
 import StarRating from './StarRating';
+import { useColors, AppColors } from '../theme/colors';
 
 interface Props {
   visible: boolean;
@@ -20,6 +21,8 @@ export default function RateBookingModal({
   onSubmit,
   isLoading,
 }: Props) {
+  const colors = useColors();
+  const s = styles(colors);
   const [score, setScore] = useState(0);
   const [comment, setComment] = useState('');
 
@@ -45,53 +48,53 @@ export default function RateBookingModal({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.backdrop}>
+      <View style={s.backdrop}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.kav}
+          style={s.kav}
         >
-          <View style={styles.sheet}>
-            <View style={styles.handle} />
+          <View style={s.sheet}>
+            <View style={s.handle} />
 
-            <Text style={styles.title}>Comment s'est passé le lavage ?</Text>
-            <Text style={styles.subtitle}>
-              Évaluez le service de <Text style={styles.washerName}>{washerName}</Text>
+            <Text style={s.title}>Comment s'est passé le lavage ?</Text>
+            <Text style={s.subtitle}>
+              Évaluez le service de <Text style={s.washerName}>{washerName}</Text>
             </Text>
 
-            <View style={styles.starsContainer}>
+            <View style={s.starsContainer}>
               <StarRating value={score} onChange={setScore} size={48} />
               {score > 0 && (
-                <Text style={styles.scoreLabel}>{scoreLabel(score)}</Text>
+                <Text style={s.scoreLabel}>{scoreLabel(score)}</Text>
               )}
             </View>
 
             <TextInput
-              style={styles.commentInput}
+              style={s.commentInput}
               placeholder="Un commentaire pour le laveur ? (optionnel)"
               value={comment}
               onChangeText={setComment}
               multiline
               maxLength={500}
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textPlaceholder}
             />
 
-            <View style={styles.actions}>
+            <View style={s.actions}>
               <Pressable
-                style={[styles.btnSecondary, isLoading && { opacity: 0.5 }]}
+                style={[s.btnSecondary, isLoading && { opacity: 0.5 }]}
                 onPress={onClose}
                 disabled={isLoading}
               >
-                <Text style={styles.btnSecondaryText}>Plus tard</Text>
+                <Text style={s.btnSecondaryText}>Plus tard</Text>
               </Pressable>
               <Pressable
                 style={[
-                  styles.btnPrimary,
+                  s.btnPrimary,
                   (score === 0 || isLoading) && { opacity: 0.5 },
                 ]}
                 onPress={handleSubmit}
                 disabled={score === 0 || isLoading}
               >
-                <Text style={styles.btnPrimaryText}>
+                <Text style={s.btnPrimaryText}>
                   {isLoading ? 'Envoi...' : 'Envoyer'}
                 </Text>
               </Pressable>
@@ -113,7 +116,7 @@ function scoreLabel(score: number): string {
   } as Record<number, string>)[score] ?? '';
 }
 
-const styles = StyleSheet.create({
+const styles = (colors: AppColors) => StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -121,7 +124,7 @@ const styles = StyleSheet.create({
   },
   kav: { width: '100%' },
   sheet: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -131,7 +134,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#DDD',
+    backgroundColor: colors.border,
     alignSelf: 'center',
     marginBottom: 16,
   },
@@ -140,14 +143,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 6,
+    color: colors.text,
   },
   subtitle: {
     fontSize: 15,
-    color: '#666',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
   },
-  washerName: { color: '#0066FF', fontWeight: '600' },
+  washerName: { color: colors.primary, fontWeight: '600' },
   starsContainer: {
     alignItems: 'center',
     marginBottom: 20,
@@ -156,17 +160,18 @@ const styles = StyleSheet.create({
   scoreLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: colors.text,
     marginTop: 4,
   },
   commentInput: {
-    backgroundColor: '#F4F5F7',
+    backgroundColor: colors.inputBackground,
     padding: 14,
     borderRadius: 10,
     fontSize: 15,
     minHeight: 90,
     textAlignVertical: 'top',
     marginBottom: 18,
+    color: colors.text,
   },
   actions: {
     flexDirection: 'row',
@@ -177,10 +182,10 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#F4F5F7',
+    backgroundColor: colors.inputBackground,
   },
   btnSecondaryText: {
-    color: '#333',
+    color: colors.text,
     fontSize: 15,
     fontWeight: '600',
   },
@@ -189,10 +194,10 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#0066FF',
+    backgroundColor: colors.primary,
   },
   btnPrimaryText: {
-    color: '#fff',
+    color: colors.textOnPrimary,
     fontSize: 15,
     fontWeight: '700',
   },

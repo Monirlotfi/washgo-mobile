@@ -7,6 +7,8 @@ export function useVehicles() {
   return useQuery({
     queryKey: VEHICLES_KEY,
     queryFn: vehiclesApi.list,
+    staleTime: 30 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }
 

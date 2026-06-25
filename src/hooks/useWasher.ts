@@ -8,7 +8,10 @@ export function useAvailableBookings(enabled: boolean = true) {
   return useQuery({
     queryKey: WASHER_AVAILABLE_KEY,
     queryFn: washerApi.getAvailableBookings,
-    refetchInterval: enabled ? 10000 : false,
+    //refetchInterval: enabled ? 10000 : false,
+    refetchInterval: enabled ? 15000 : false,
+    staleTime: 8 * 1000,
+    gcTime: 2 * 60 * 1000,
     enabled,
   });
 }
@@ -17,7 +20,15 @@ export function useMyWasherBookings() {
   return useQuery({
     queryKey: WASHER_BOOKINGS_KEY,
     queryFn: washerApi.getMyBookings,
-    refetchInterval: 5000,
+    staleTime: 5 * 1000,
+    gcTime: 2 * 60 * 1000,
+    //refetchInterval: 5000,
+    refetchInterval: (query) => {
+      if (!query.state.data) return 5000;
+      const activeStatuses = ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS', 'AWAITING_CLIENT_CONFIRMATION'];
+      const hasActive = query.state.data.some((b) => activeStatuses.includes(b.status));
+      return hasActive ? 5000 : 15000;
+    },
   });
 }
 
@@ -31,7 +42,12 @@ export function useActiveWasherBooking() {
       );
       return active ?? null;
     },
-    refetchInterval: 5000,
+    staleTime: 5 * 1000,
+    gcTime: 2 * 60 * 1000,
+    //refetchInterval: 5000,
+    refetchInterval: (query) => {
+      return query.state.data ? 5000 : 10000;
+    },
   });
 }
 
