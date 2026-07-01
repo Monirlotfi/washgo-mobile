@@ -1,8 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { washerApi } from '../api/washer';
 
+export const WASHER_DASHBOARD_KEY = ['washer', 'dashboard'];
 export const WASHER_AVAILABLE_KEY = ['washer', 'available'];
 export const WASHER_BOOKINGS_KEY = ['washer', 'bookings'];
+
+export function useWasherDashboard() {
+  return useQuery({
+    queryKey: WASHER_DASHBOARD_KEY,
+    queryFn: washerApi.getDashboard,
+    staleTime: 8 * 1000,
+    gcTime: 2 * 60 * 1000,
+    refetchInterval: 15000,
+  });
+}
 
 export function useAvailableBookings(enabled: boolean = true) {
   return useQuery({
@@ -34,17 +45,16 @@ export function useMyWasherBookings() {
 
 export function useActiveWasherBooking() {
   return useQuery({
-    queryKey: [...WASHER_BOOKINGS_KEY, 'active'],
-    queryFn: async () => {
-      const list = await washerApi.getMyBookings();
-      const active = list.find((b) =>
+    queryKey: WASHER_BOOKINGS_KEY,
+    queryFn: washerApi.getMyBookings,
+    staleTime: 5 * 1000,
+    gcTime: 2 * 60 * 1000,
+    select: (data) => {
+      const active = data.find((b) =>
         ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS', 'AWAITING_CLIENT_CONFIRMATION'].includes(b.status),
       );
       return active ?? null;
     },
-    staleTime: 5 * 1000,
-    gcTime: 2 * 60 * 1000,
-    //refetchInterval: 5000,
     refetchInterval: (query) => {
       return query.state.data ? 5000 : 10000;
     },
@@ -65,6 +75,18 @@ export function useStartWash() {
   return useMutation({
     mutationFn: washerApi.startWash,
     onSuccess: () => qc.invalidateQueries({ queryKey: WASHER_BOOKINGS_KEY }),
+  });
+}
+
+export function useWasherBooking(id: string | null) {
+  return useQuery({
+    queryKey: WASHER_BOOKINGS_KEY,
+    queryFn: washerApi.getMyBookings,
+    staleTime: 5 * 1000,
+    gcTime: 2 * 60 * 1000,
+    select: (data) => data.find((b) => b.id === id) ?? null,
+    enabled: !!id,
+    refetchInterval: 5000,
   });
 }
 

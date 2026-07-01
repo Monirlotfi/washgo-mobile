@@ -5,14 +5,11 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { GoogleMaps } from 'expo-maps';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../../../src/api/client';
+import MapView, { Marker } from 'react-native-maps';
 import {
-  useMarkArrived, useStartWash, useCompleteWash,
+  useWasherBooking, useMarkArrived, useStartWash, useCompleteWash,
   useWasherCancelBooking,
 } from '../../../src/hooks/useWasher';
-import { Booking } from '../../../src/types/api.types';
 import { useLocationTracking } from '../../../src/hooks/useLocationTracking';
 import WasherCancelModal from '../../../src/components/WasherCancelModal';
 
@@ -21,14 +18,7 @@ export default function WasherBookingScreen() {
   const router = useRouter();
   useLocationTracking(true);
 
-  const booking = useQuery({
-    queryKey: ['washer-booking', id],
-    queryFn: async () => {
-      const res = await apiClient.get<Booking[]>('/washer/bookings');
-      return res.data.find((b) => b.id === id) ?? null;
-    },
-    refetchInterval: 5000,
-  });
+  const booking = useWasherBooking(id);
 
   const arrived = useMarkArrived();
   const start = useStartWash();
@@ -106,18 +96,20 @@ export default function WasherBookingScreen() {
         <View style={styles.topBarSpacer} />
       </View>
 
-      <GoogleMaps.View
+      <MapView
         style={styles.map}
-        cameraPosition={{
-          coordinates: { latitude: b.lat, longitude: b.lng },
-          zoom: 14,
+        initialRegion={{
+          latitude: b.lat,
+          longitude: b.lng,
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
         }}
-        markers={[{
-          id: 'client',
-          coordinates: { latitude: b.lat, longitude: b.lng },
-          title: 'Client',
-        }]}
-      />
+      >
+        <Marker
+          coordinate={{ latitude: b.lat, longitude: b.lng }}
+          title="Client"
+        />
+      </MapView>
 
       <ScrollView style={styles.panel} contentContainerStyle={{ paddingBottom: 16 }}>
         <Text style={styles.statusBig}>{statusEmoji(b.status)}</Text>

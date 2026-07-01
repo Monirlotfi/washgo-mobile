@@ -8,7 +8,7 @@
     "scheme": "washgo",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "owner": "loutfihi_mounir",
+    "owner": "washgo-mobile",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -17,11 +17,7 @@
     "ios": {
       "supportsTablet": false,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "WashGo a besoin de votre position pour vous proposer un laveur à proximité.",
-        "UIBackgroundModes": [
-          "location",
-          "remote-notification"
-        ]
+        "NSLocationWhenInUseUsageDescription": "WashGo a besoin de votre position pour vous proposer un laveur à proximité."
       }
     },
     "android": {
@@ -33,13 +29,15 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "VIBRATE",
-        "POST_NOTIFICATIONS"
+        "POST_NOTIFICATIONS",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ],
       "package": "com.washgo.mobile",
-      "googleServicesFile": "./google-services.json", 
+      "googleServicesFile": "./google-services.json",
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyAkJN68qNptboZqbOMV7JOvdNUEE1aoFOk"
+          "apiKey": "AIzaSyDjDqYr1jQwA5GWSBOkA8mjaGOWwrr0F50"
         }
       }
     },
@@ -48,14 +46,7 @@
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
       "@react-native-firebase/messaging",
-      [
-        "expo-maps",
-        {
-          "android": {
-            "googleMapsApiKey": "AIzaSyAkJN68qNptboZqbOMV7JOvdNUEE1aoFOk"
-          }
-        }
-      ],
+
       "expo-router",
       "expo-notifications",
       [
@@ -69,10 +60,10 @@
       "typedRoutes": true
     },
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "2b28d2dd-007f-4dcd-953d-c0545b6a2907"
-      },
-      "router": {}
+        "projectId": "acdfa883-fc8d-4086-9a0b-96b7c1fdfe28"
+      }
     }
   }
 }

@@ -30,8 +30,7 @@ export function useMyPendingOffers(enabled = true) {
     enabled,
     staleTime: 5 * 1000,
     gcTime: 2 * 60 * 1000,
-    //refetchInterval: 5000,
-    refetchInterval: 10000,
+    refetchInterval: 15000,
   });
 }
 

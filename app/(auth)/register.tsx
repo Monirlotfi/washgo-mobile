@@ -44,8 +44,9 @@ export default function RegisterScreen() {
       router.replace('/(client)/home');
     },
     onError: (err: any) => {
+      console.error('Registration error:', err.response?.status, err.response?.data, err.message);
       const msg = err.response?.data?.message;
-      Alert.alert('Erreur', Array.isArray(msg) ? msg.join('\n') : msg ?? 'Inscription impossible');
+      Alert.alert('Erreur', Array.isArray(msg) ? msg.join('\n') : msg ?? err.message ?? 'Inscription impossible');
     },
   });
 

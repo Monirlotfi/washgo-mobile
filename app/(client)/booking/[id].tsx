@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { GoogleMaps } from 'expo-maps';
+import MapView, { Marker } from 'react-native-maps';
 
 import {
   useBooking, useCancelBooking, useConfirmCompletion,
@@ -150,28 +150,29 @@ export default function BookingDetailScreen() {
         </Pressable>
       </View>
 
-      <GoogleMaps.View
+      <MapView
         style={styles.map}
-        cameraPosition={{
-          coordinates: { latitude: b.lat, longitude: b.lng },
-          zoom: 14,
+        initialRegion={{
+          latitude: b.lat,
+          longitude: b.lng,
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
         }}
-        markers={[
-          {
-            id: 'client',
-            coordinates: { latitude: b.lat, longitude: b.lng },
-            title: 'Votre adresse',
-          },
-          ...(b.washer?.currentLat && b.washer?.currentLng ? [{
-            id: 'washer',
-            coordinates: {
+      >
+        <Marker
+          coordinate={{ latitude: b.lat, longitude: b.lng }}
+          title="Votre adresse"
+        />
+        {b.washer?.currentLat && b.washer?.currentLng && (
+          <Marker
+            coordinate={{
               latitude: b.washer.currentLat,
               longitude: b.washer.currentLng,
-            },
-            title: b.washer.user.fullName,
-          }] : []),
-        ]}
-      />
+            }}
+            title={b.washer.user.fullName}
+          />
+        )}
+      </MapView>
 
       <ScrollView style={styles.panel} contentContainerStyle={{ paddingBottom: 16 }}>
         <Text style={styles.statusLabel}>{statusEmoji(b.status)}</Text>

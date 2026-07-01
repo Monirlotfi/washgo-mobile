@@ -7,12 +7,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useNavigation } from 'expo-router';
 import { DrawerActions } from '@react-navigation/native';
 import * as Location from 'expo-location';
-import { GoogleMaps } from 'expo-maps';
+import MapView, { Marker } from 'react-native-maps';
 import { useAuthStore } from '../../src/stores/auth.store';
-import {
-  useAvailableBookings, useActiveWasherBooking,
-} from '../../src/hooks/useWasher';
-import { useMyPendingOffers, useMakeOffer } from '../../src/hooks/useOffers';
+import { useWasherDashboard } from '../../src/hooks/useWasher';
+import { useMakeOffer } from '../../src/hooks/useOffers';
 import { useLocationTracking } from '../../src/hooks/useLocationTracking';
 import { washerApi, AvailableBooking } from '../../src/api/washer';
 import MakeOfferModal from '../../src/components/MakeOfferModal';
@@ -26,12 +24,13 @@ export default function WasherDashboard() {
   const [previewBooking, setPreviewBooking] = useState<AvailableBooking | null>(null);
   const [offerModalBooking, setOfferModalBooking] = useState<AvailableBooking | null>(null);
 
-  const activeBooking = useActiveWasherBooking();
-  const availableBookings = useAvailableBookings(isOnline && !activeBooking.data);
-  const myOffers = useMyPendingOffers(isOnline && !activeBooking.data);
+  const dashboard = useWasherDashboard();
+  const activeBooking = dashboard.data?.activeBooking ?? null;
+  const availableBookingsList = dashboard.data?.availableBookings ?? [];
+  const myOffersList = dashboard.data?.pendingOffers ?? [];
   const makeOffer = useMakeOffer();
 
-  useLocationTracking(isOnline || !!activeBooking.data);
+  useLocationTracking(isOnline || !!activeBooking);
 
   const handleToggle = async (value: boolean) => {
     setTogglingStatus(true);
@@ -92,14 +91,14 @@ export default function WasherDashboard() {
         <Text style={styles.name}>{user?.fullName} 🧽</Text>
       </View>
 
-      {activeBooking.data && (
+      {activeBooking && (
         <Pressable
           style={styles.activeBanner}
-          onPress={() => router.push(`/(washer)/booking/${activeBooking.data!.id}`)}
+          onPress={() => router.push(`/(washer)/booking/${activeBooking.id}`)}
         >
           <View style={{ flex: 1 }}>
-            <Text style={styles.activeBannerLabel}>{activeBannerLabel(activeBooking.data.status)}</Text>
-            <Text style={styles.activeBannerDetail}>{activeBooking.data.addressLabel}</Text>
+            <Text style={styles.activeBannerLabel}>{activeBannerLabel(activeBooking.status)}</Text>
+            <Text style={styles.activeBannerDetail}>{activeBooking.addressLabel}</Text>
           </View>
           <Text style={styles.activeBannerArrow}>→</Text>
         </Pressable>
@@ -108,14 +107,14 @@ export default function WasherDashboard() {
       <View style={[
         styles.statusCard,
         isOnline && styles.statusCardOnline,
-        !!activeBooking.data && styles.statusCardLocked,
+        !!activeBooking && styles.statusCardLocked,
       ]}>
         <View style={{ flex: 1 }}>
           <Text style={[styles.statusLabel, isOnline && styles.statusLabelOnline]}>
-            {activeBooking.data ? '🚗 Course en cours' : isOnline ? '🟢 En ligne' : '⚪ Hors ligne'}
+            {activeBooking ? '🚗 Course en cours' : isOnline ? '🟢 En ligne' : '⚪ Hors ligne'}
           </Text>
           <Text style={[styles.statusDetail, isOnline && styles.statusDetailOnline]}>
-            {activeBooking.data
+            {activeBooking
               ? 'Terminez votre course avant de changer de statut'
               : isOnline ? 'Vous pouvez faire des offres' : 'Activez pour voir les courses'}
           </Text>
@@ -126,17 +125,17 @@ export default function WasherDashboard() {
           <Switch
             value={isOnline}
             onValueChange={handleToggle}
-            disabled={!!activeBooking.data}
+            disabled={!!activeBooking}
             trackColor={{ false: '#ccc', true: '#34C759' }}
             thumbColor="#fff"
           />
         )}
       </View>
 
-      {isOnline && !activeBooking.data && (myOffers.data?.length ?? 0) > 0 && (
+      {isOnline && !activeBooking && myOffersList.length > 0 && (
         <View style={styles.myOffersBanner}>
           <Text style={styles.myOffersText}>
-            ⏳ Vous avez {myOffers.data!.length} offre(s) en cours de validation
+            ⏳ Vous avez {myOffersList.length} offre(s) en cours de validation
           </Text>
           <Pressable onPress={() => router.push('/(washer)/my-offers')}>
             <Text style={styles.myOffersLink}>Voir →</Text>
@@ -146,12 +145,12 @@ export default function WasherDashboard() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
-          {activeBooking.data
+          {activeBooking
             ? 'Courses bloquées pendant une course active'
-            : `Courses disponibles${availableBookings.data ? ` (${availableBookings.data.length})` : ''}`}
+            : `Courses disponibles${availableBookingsList.length > 0 ? ` (${availableBookingsList.length})` : ''}`}
         </Text>
 
-        {activeBooking.data ? (
+        {activeBooking ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>
               Vous pourrez faire de nouvelles offres une fois la course actuelle terminée.
@@ -161,9 +160,9 @@ export default function WasherDashboard() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>Passez en ligne pour voir les courses à proximité.</Text>
           </View>
-        ) : availableBookings.isLoading ? (
+        ) : dashboard.isLoading ? (
           <ActivityIndicator />
-        ) : (availableBookings.data?.length ?? 0) === 0 ? (
+        ) : availableBookingsList.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>
               Aucune course disponible pour le moment.{'\n'}Restez en ligne, ça arrive ! 💪
@@ -171,25 +170,31 @@ export default function WasherDashboard() {
           </View>
         ) : (
           <FlatList
-            data={availableBookings.data}
+            data={availableBookingsList}
             keyExtractor={(b) => b.booking_id}
             refreshControl={
               <RefreshControl
-                refreshing={availableBookings.isRefetching}
-                onRefresh={() => availableBookings.refetch()}
+                refreshing={dashboard.isRefetching}
+                onRefresh={() => dashboard.refetch()}
               />
             }
             renderItem={({ item }) => (
               <Pressable style={styles.bookingCard} onPress={() => setPreviewBooking(item)}>
-                 <GoogleMaps.View
+                 <MapView
                     style={styles.miniMap}
-                    cameraPosition={{
-                      coordinates: { latitude: item.lat, longitude: item.lng },
-                      zoom: 14,
+                    initialRegion={{
+                      latitude: item.lat,
+                      longitude: item.lng,
+                      latitudeDelta: 0.02,
+                      longitudeDelta: 0.02,
                     }}
-                    markers={[{ id: 'booking', coordinates: { latitude: item.lat, longitude: item.lng } }]}
-                    uiSettings={{ scrollGesturesEnabled: false, zoomGesturesEnabled: false }}
-                  />
+                    scrollEnabled={false}
+                    zoomEnabled={false}
+                  >
+                    <Marker
+                      coordinate={{ latitude: item.lat, longitude: item.lng }}
+                    />
+                  </MapView>
                 <View style={styles.bookingHeader}>
                   <Text style={styles.bookingDistance}>📍 {(item.distance_meters / 1000).toFixed(2)} km</Text>
                   <Text style={styles.bookingPrice}>Suggéré : {item.price_mad / 100} DH</Text>
@@ -219,18 +224,20 @@ export default function WasherDashboard() {
               <View style={{ width: 60 }} />
             </View>
 
-            <GoogleMaps.View
+            <MapView
               style={styles.modalMap}
-              cameraPosition={{
-                coordinates: { latitude: previewBooking.lat, longitude: previewBooking.lng },
-                zoom: 14,
+              initialRegion={{
+                latitude: previewBooking.lat,
+                longitude: previewBooking.lng,
+                latitudeDelta: 0.02,
+                longitudeDelta: 0.02,
               }}
-              markers={[{
-                id: 'client',
-                coordinates: { latitude: previewBooking.lat, longitude: previewBooking.lng },
-                title: 'Client',
-              }]}
-            />
+            >
+              <Marker
+                coordinate={{ latitude: previewBooking.lat, longitude: previewBooking.lng }}
+                title="Client"
+              />
+            </MapView>
 
             <ScrollView style={styles.modalPanel} contentContainerStyle={{ paddingBottom: 16 }}>
               <View style={styles.modalCard}>

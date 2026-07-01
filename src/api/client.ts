@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.1.17:3000/api/v1';
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.1.24:3000/api/v1';
 // const API_URL = 'https://primarily-disabled-casing.ngrok-free.dev/api/v1';
 
 // Cache mémoire du token pour éviter AsyncStorage synchrone à chaque requête
@@ -12,15 +12,6 @@ export const apiClient = axios.create({
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 });
-
-// Initialise le cache depuis AsyncStorage au démarrage
-export async function initTokenCache(): Promise<void> {
-  try {
-    cachedToken = await AsyncStorage.getItem('washgo_token');
-  } catch {
-    cachedToken = null;
-  }
-}
 
 // Met à jour le cache quand le token change
 export function setTokenCache(token: string | null): void {

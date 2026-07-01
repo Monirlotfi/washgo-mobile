@@ -31,30 +31,27 @@ export function useBooking(id: string | null) {
     enabled: !!id,
     staleTime: 3 * 1000,
     gcTime: 2 * 60 * 1000,
-    //refetchInterval: 5000,
     refetchInterval: (query) => {
-      if (!query.state.data) return 5000;
-      const activeStatuses = ['PENDING', 'ACCEPTED', 'ARRIVED', 'IN_PROGRESS', 'AWAITING_CLIENT_CONFIRMATION'];
-      return activeStatuses.includes(query.state.data.status) ? 5000 : false;
+      if (!query.state.data) return 10000;
+      const activeStatuses = ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS', 'AWAITING_CLIENT_CONFIRMATION'];
+      if (activeStatuses.includes(query.state.data.status)) return 5000;
+      if (query.state.data.status === 'PENDING') return 15000;
+      return false;
     },
   });
 }
 
 export function useActiveBooking() {
   return useQuery({
-    queryKey: [...BOOKINGS_KEY, 'active'],
-    queryFn: async () => {
-      const list = await bookingsApi.list();
-      const active = list.find((b) =>
+    queryKey: BOOKINGS_KEY,
+    queryFn: bookingsApi.list,
+    staleTime: 10 * 1000,
+    gcTime: 5 * 60 * 1000,
+    select: (data) => {
+      const active = data.find((b) =>
         ['PENDING', 'ACCEPTED', 'ARRIVED', 'IN_PROGRESS', 'AWAITING_CLIENT_CONFIRMATION'].includes(b.status),
       );
       return active ?? null;
-    },
-    staleTime: 5 * 1000,
-    gcTime: 2 * 60 * 1000,
-    //refetchInterval: 5000,
-    refetchInterval: (query) => {
-      return query.state.data ? 5000 : false;
     },
   });
 }
