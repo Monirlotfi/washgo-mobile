@@ -3,6 +3,7 @@ import {
   View, Text, TextInput, Pressable, StyleSheet, Modal,
   FlatList, TextInput as SearchInput,
 } from 'react-native';
+import { useColors, AppColors } from '../theme/colors';
 
 const COUNTRIES = [
   { code: '+212', flag: '🇲🇦', name: 'Maroc' },
@@ -31,6 +32,8 @@ interface Props {
 }
 
 export default function PhoneInput({ value, onChangePhone, placeholder = '6XXXXXXXX' }: Props) {
+  const colors = useColors();
+  const s = styles(colors);
   const [dialCode, setDialCode] = useState('+212');
   const [localNumber, setLocalNumber] = useState(value.replace(/^\+\d+/, '') || '');
   const [showPicker, setShowPicker] = useState(false);
@@ -57,42 +60,43 @@ export default function PhoneInput({ value, onChangePhone, placeholder = '6XXXXX
   };
 
   return (
-    <View style={styles.container}>
+    <View style={s.container}>
       {/* Sélecteur indicatif */}
-      <Pressable style={styles.dialCodeBtn} onPress={() => setShowPicker(true)}>
-        <Text style={styles.dialCodeText}>
+      <Pressable style={s.dialCodeBtn} onPress={() => setShowPicker(true)}>
+        <Text style={s.dialCodeText}>
           {COUNTRIES.find((c) => c.code === dialCode)?.flag ?? '🌍'} {dialCode}
         </Text>
-        <Text style={styles.chevron}>▾</Text>
+        <Text style={s.chevron}>▾</Text>
       </Pressable>
 
-      <View style={styles.divider} />
+      <View style={s.divider} />
 
       {/* Champ numéro */}
       <TextInput
-        style={styles.numberInput}
+        style={s.numberInput}
         placeholder={placeholder}
         value={localNumber}
         onChangeText={handleNumberChange}
         keyboardType="phone-pad"
         autoCapitalize="none"
-        placeholderTextColor="#999"
+        placeholderTextColor={colors.textPlaceholder}
       />
 
       {/* Modal sélection pays */}
       <Modal visible={showPicker} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Choisir l'indicatif</Text>
+        <View style={s.modalOverlay}>
+          <View style={s.modalContainer}>
+            <View style={s.modalHeader}>
+              <Text style={s.modalTitle}>Choisir l'indicatif</Text>
               <Pressable onPress={() => { setShowPicker(false); setSearch(''); }}>
-                <Text style={styles.modalClose}>✕</Text>
+                <Text style={s.modalClose}>✕</Text>
               </Pressable>
             </View>
 
             <SearchInput
-              style={styles.searchInput}
+              style={s.searchInput}
               placeholder="Rechercher un pays..."
+              placeholderTextColor={colors.textPlaceholder}
               value={search}
               onChangeText={setSearch}
               autoFocus
@@ -104,16 +108,16 @@ export default function PhoneInput({ value, onChangePhone, placeholder = '6XXXXX
               renderItem={({ item }) => (
                 <Pressable
                   style={[
-                    styles.countryItem,
-                    item.code === dialCode && styles.countryItemActive,
+                    s.countryItem,
+                    item.code === dialCode && s.countryItemActive,
                   ]}
                   onPress={() => handleDialCodeSelect(item.code)}
                 >
-                  <Text style={styles.countryFlag}>{item.flag}</Text>
-                  <Text style={styles.countryName}>{item.name}</Text>
-                  <Text style={styles.countryCode}>{item.code}</Text>
+                  <Text style={s.countryFlag}>{item.flag}</Text>
+                  <Text style={s.countryName}>{item.name}</Text>
+                  <Text style={s.countryCode}>{item.code}</Text>
                   {item.code === dialCode && (
-                    <Text style={styles.checkmark}>✓</Text>
+                    <Text style={s.checkmark}>✓</Text>
                   )}
                 </Pressable>
               )}
@@ -125,11 +129,11 @@ export default function PhoneInput({ value, onChangePhone, placeholder = '6XXXXX
   );
 }
 
-const styles = StyleSheet.create({
+const styles = (colors: AppColors) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F4F5F7',
+    backgroundColor: colors.inputBackground,
     borderRadius: 12,
     marginBottom: 12,
     overflow: 'hidden',
@@ -141,14 +145,14 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 4,
   },
-  dialCodeText: { fontSize: 15, fontWeight: '600', color: '#1A1A1A' },
-  chevron: { fontSize: 11, color: '#666', marginTop: 2 },
-  divider: { width: 1, height: 24, backgroundColor: '#DDD' },
+  dialCodeText: { fontSize: 15, fontWeight: '600', color: colors.text },
+  chevron: { fontSize: 11, color: colors.textSecondary, marginTop: 2 },
+  divider: { width: 1, height: 24, backgroundColor: colors.border },
   numberInput: {
     flex: 1,
     padding: 16,
     fontSize: 16,
-    color: '#1A1A1A',
+    color: colors.text,
   },
   modalOverlay: {
     flex: 1,
@@ -156,7 +160,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '80%',
@@ -170,10 +174,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#EEE',
   },
   modalTitle: { fontSize: 17, fontWeight: '700' },
-  modalClose: { fontSize: 20, color: '#666', padding: 4 },
+  modalClose: { fontSize: 20, color: colors.textSecondary, padding: 4 },
   searchInput: {
     margin: 16,
-    backgroundColor: '#F4F5F7',
+    backgroundColor: colors.inputBackground,
     padding: 12,
     borderRadius: 10,
     fontSize: 15,
@@ -184,12 +188,12 @@ const styles = StyleSheet.create({
     padding: 14,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F4F5F7',
+    borderBottomColor: colors.inputBackground,
     gap: 12,
   },
   countryItemActive: { backgroundColor: '#E8F1FF' },
   countryFlag: { fontSize: 24 },
-  countryName: { flex: 1, fontSize: 15, color: '#333' },
-  countryCode: { fontSize: 15, fontWeight: '600', color: '#0066FF' },
-  checkmark: { color: '#0066FF', fontWeight: '700', fontSize: 16 },
+  countryName: { flex: 1, fontSize: 15, color: colors.text },
+  countryCode: { fontSize: 15, fontWeight: '600', color: colors.primary },
+  checkmark: { color: colors.primary, fontWeight: '700', fontSize: 16 },
 });

@@ -3,7 +3,22 @@ import {
   Booking,
   EarningsMonth,
   EarningsResponse,
+  WasherOfferWithBooking,
 } from '../types/api.types';
+
+export interface WasherDashboardResponse {
+  profile: {
+    id: string;
+    status: 'AVAILABLE' | 'OFFLINE' | 'BUSY';
+    isVerified: boolean;
+    currentLat: number | null;
+    currentLng: number | null;
+    avgRating: number;
+  };
+  activeBooking: Booking | null;
+  availableBookings: AvailableBooking[];
+  pendingOffers: WasherOfferWithBooking[];
+}
 
 export interface AvailableBooking {
   booking_id: string;
@@ -32,6 +47,11 @@ export interface WasherStatusResponse {
 }
 
 export const washerApi = {
+  getDashboard: async (): Promise<WasherDashboardResponse> => {
+    const res = await apiClient.get<WasherDashboardResponse>('/washer/dashboard');
+    return res.data;
+  },
+
   updateLocation: async (lat: number, lng: number) => {
     const res = await apiClient.patch('/washer/location', { lat, lng });
     return res.data;

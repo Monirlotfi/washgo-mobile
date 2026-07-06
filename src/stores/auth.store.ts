@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types/api.types';
+import { setTokenCache } from '../api/client';
 
 interface AuthState {
   user: User | null;
@@ -21,12 +22,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
 
   setAuth: async (user, token) => {
+    setTokenCache(token);
     await AsyncStorage.setItem(TOKEN_KEY, token);
     await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
     set({ user, token, isLoading: false });
   },
 
   logout: async () => {
+    setTokenCache(null);
     await AsyncStorage.removeItem(TOKEN_KEY);
     await AsyncStorage.removeItem(USER_KEY);
     set({ user: null, token: null, isLoading: false });
@@ -39,6 +42,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         AsyncStorage.getItem(USER_KEY),
       ]);
       if (token && userStr) {
+        setTokenCache(token);
         set({ token, user: JSON.parse(userStr), isLoading: false });
       } else {
         set({ isLoading: false });

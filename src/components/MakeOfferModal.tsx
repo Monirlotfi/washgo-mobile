@@ -3,6 +3,7 @@ import {
   Modal, View, Text, Pressable, StyleSheet,
   KeyboardAvoidingView, Platform, TextInput,
 } from 'react-native';
+import { useColors, AppColors } from '../theme/colors';
 
 interface Props {
   visible: boolean;
@@ -19,6 +20,8 @@ export default function MakeOfferModal({
   onConfirm,
   isLoading,
 }: Props) {
+  const colors = useColors();
+  const s = styles(colors);
   const suggestedDH = suggestedPriceMAD / 100;
   const [priceDH, setPriceDH] = useState(suggestedDH);
 
@@ -52,41 +55,41 @@ export default function MakeOfferModal({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.backdrop}>
+      <View style={s.backdrop}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.kav}
+          style={s.kav}
         >
-          <View style={styles.sheet}>
-            <View style={styles.handle} />
+          <View style={s.sheet}>
+            <View style={s.handle} />
 
-            <Text style={styles.title}>Faire une offre</Text>
-            <Text style={styles.subtitle}>
-              Prix suggéré : <Text style={styles.suggested}>{suggestedDH} DH</Text>
+            <Text style={s.title}>Faire une offre</Text>
+            <Text style={s.subtitle}>
+              Prix suggéré : <Text style={s.suggested}>{suggestedDH} DH</Text>
             </Text>
-            <Text style={styles.helpText}>
+            <Text style={s.helpText}>
               ⚠️ Une fois envoyée, l'offre est finale et ne peut pas être modifiée ni annulée jusqu'à expiration.
             </Text>
 
-            <View style={styles.priceContainer}>
+            <View style={s.priceContainer}>
               <Pressable
-                style={styles.adjustBtn}
+                style={s.adjustBtn}
                 onPress={() => adjust(-10)}
                 disabled={priceDH <= 10}
               >
-                <Text style={styles.adjustBtnText}>-10</Text>
+                <Text style={s.adjustBtnText}>-10</Text>
               </Pressable>
               <Pressable
-                style={styles.adjustBtn}
+                style={s.adjustBtn}
                 onPress={() => adjust(-5)}
                 disabled={priceDH <= 10}
               >
-                <Text style={styles.adjustBtnText}>-5</Text>
+                <Text style={s.adjustBtnText}>-5</Text>
               </Pressable>
 
-              <View style={styles.priceWrapper}>
+              <View style={s.priceWrapper}>
                 <TextInput
-                  style={styles.priceInput}
+                  style={s.priceInput}
                   value={String(priceDH)}
                   onChangeText={(v) => {
                     const num = parseInt(v.replace(/\D/g, '')) || 0;
@@ -95,51 +98,51 @@ export default function MakeOfferModal({
                   keyboardType="number-pad"
                   maxLength={4}
                 />
-                <Text style={styles.priceUnit}>DH</Text>
+                <Text style={s.priceUnit}>DH</Text>
               </View>
 
               <Pressable
-                style={styles.adjustBtn}
+                style={s.adjustBtn}
                 onPress={() => adjust(5)}
                 disabled={priceDH >= 1000}
               >
-                <Text style={styles.adjustBtnText}>+5</Text>
+                <Text style={s.adjustBtnText}>+5</Text>
               </Pressable>
               <Pressable
-                style={styles.adjustBtn}
+                style={s.adjustBtn}
                 onPress={() => adjust(10)}
                 disabled={priceDH >= 1000}
               >
-                <Text style={styles.adjustBtnText}>+10</Text>
+                <Text style={s.adjustBtnText}>+10</Text>
               </Pressable>
             </View>
 
             <Text
               style={[
-                styles.diffLabel,
-                diff > 0 ? styles.diffPositive : diff < 0 ? styles.diffNegative : styles.diffNeutral,
+                s.diffLabel,
+                diff > 0 ? s.diffPositive : diff < 0 ? s.diffNegative : s.diffNeutral,
               ]}
             >
               {diffLabel}
             </Text>
 
-            <View style={styles.actions}>
+            <View style={s.actions}>
               <Pressable
-                style={[styles.btnSecondary, isLoading && { opacity: 0.5 }]}
+                style={[s.btnSecondary, isLoading && { opacity: 0.5 }]}
                 onPress={onClose}
                 disabled={isLoading}
               >
-                <Text style={styles.btnSecondaryText}>Annuler</Text>
+                <Text style={s.btnSecondaryText}>Annuler</Text>
               </Pressable>
               <Pressable
                 style={[
-                  styles.btnPrimary,
+                  s.btnPrimary,
                   (priceDH < 10 || priceDH > 1000 || isLoading) && { opacity: 0.5 },
                 ]}
                 onPress={handleConfirm}
                 disabled={priceDH < 10 || priceDH > 1000 || isLoading}
               >
-                <Text style={styles.btnPrimaryText}>
+                <Text style={s.btnPrimaryText}>
                   {isLoading ? 'Envoi...' : `Envoyer offre (${priceDH} DH)`}
                 </Text>
               </Pressable>
@@ -151,7 +154,7 @@ export default function MakeOfferModal({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = (colors: AppColors) => StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -159,7 +162,7 @@ const styles = StyleSheet.create({
   },
   kav: { width: '100%' },
   sheet: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -169,18 +172,18 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#DDD',
+    backgroundColor: colors.border,
     alignSelf: 'center',
     marginBottom: 16,
   },
-  title: { fontSize: 22, fontWeight: '700', textAlign: 'center', marginBottom: 4 },
+  title: { fontSize: 22, fontWeight: '700', textAlign: 'center', marginBottom: 4, color: colors.text },
   subtitle: {
     fontSize: 15,
-    color: '#666',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 12,
   },
-  suggested: { color: '#0066FF', fontWeight: '700' },
+  suggested: { color: colors.primary, fontWeight: '700' },
   helpText: {
     fontSize: 12,
     color: '#B45F06',
@@ -201,15 +204,15 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#F4F5F7',
+    backgroundColor: colors.inputBackground,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  adjustBtnText: { fontSize: 14, fontWeight: '700', color: '#333' },
+  adjustBtnText: { fontSize: 14, fontWeight: '700', color: colors.text },
   priceWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0066FF',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -218,36 +221,36 @@ const styles = StyleSheet.create({
   priceInput: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.textOnPrimary,
     minWidth: 60,
     textAlign: 'center',
     padding: 0,
   },
-  priceUnit: { fontSize: 18, fontWeight: '700', color: '#fff' },
+  priceUnit: { fontSize: 18, fontWeight: '700', color: colors.textOnPrimary },
   diffLabel: {
     fontSize: 13,
     textAlign: 'center',
     fontWeight: '600',
     marginBottom: 20,
   },
-  diffNeutral: { color: '#666' },
+  diffNeutral: { color: colors.textSecondary },
   diffPositive: { color: '#34C759' },
-  diffNegative: { color: '#FF3B30' },
+  diffNegative: { color: colors.danger },
   actions: { flexDirection: 'row', gap: 10 },
   btnSecondary: {
     flex: 1,
     padding: 14,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#F4F5F7',
+    backgroundColor: colors.inputBackground,
   },
-  btnSecondaryText: { color: '#333', fontSize: 15, fontWeight: '600' },
+  btnSecondaryText: { color: colors.text, fontSize: 15, fontWeight: '600' },
   btnPrimary: {
     flex: 2,
     padding: 14,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#0066FF',
+    backgroundColor: colors.primary,
   },
-  btnPrimaryText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  btnPrimaryText: { color: colors.textOnPrimary, fontSize: 15, fontWeight: '700' },
 });

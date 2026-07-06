@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useColors, AppColors } from '../../src/theme/colors';
 import {
   View, Text, TextInput, Pressable, StyleSheet, Alert,
   ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator,
@@ -20,6 +21,8 @@ const EQUIPMENT_OPTIONS: { value: EquipmentType; label: string; emoji: string; d
 ];
 
 export default function RegisterWasherScreen() {
+  const colors = useColors();
+  const s = styles(colors);
   const router = useRouter();
   const params = useLocalSearchParams<{ idToken?: string; step?: string; formDataJson?: string }>();
 
@@ -40,8 +43,9 @@ export default function RegisterWasherScreen() {
     mutationFn: authApi.registerWasher,
     onSuccess: () => router.replace('/(auth)/washer-pending'),
     onError: (err: any) => {
+      console.error('Washer registration error:', err.response?.status, err.response?.data, err.message);
       const msg = err.response?.data?.message;
-      Alert.alert('Erreur', Array.isArray(msg) ? msg.join('\n') : msg ?? 'Inscription impossible');
+      Alert.alert('Erreur', Array.isArray(msg) ? msg.join('\n') : msg ?? err.message ?? 'Inscription impossible');
     },
   });
 
@@ -107,26 +111,27 @@ export default function RegisterWasherScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#fff' }}
+      style={{ flex: 1, backgroundColor: colors.background }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.progressBar}>
-        {[1, 2, 3].map((s) => (
-          <View key={s} style={[styles.progressStep, currentStep >= s && styles.progressStepActive]} />
+      <View style={s.progressBar}>
+        {[1, 2, 3].map((step) => (
+          <View key={step} style={[s.progressStep, currentStep >= step && s.progressStepActive]} />
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={s.container} keyboardShouldPersistTaps="handled">
 
         {/* ─── Étape 1 ─── */}
         {currentStep === 1 && (
           <>
-            <Text style={styles.title}>Devenir laveur</Text>
-            <Text style={styles.subtitle}>Étape 1 — Informations personnelles</Text>
+            <Text style={s.title}>Devenir laveur</Text>
+            <Text style={s.subtitle}>Étape 1 — Informations personnelles</Text>
 
             <TextInput
-              style={styles.input}
+              style={s.input}
               placeholder="Nom complet"
+              placeholderTextColor={colors.textPlaceholder}
               value={form.fullName}
               onChangeText={(v) => setForm({ ...form, fullName: v })}
             />
@@ -136,32 +141,33 @@ export default function RegisterWasherScreen() {
               onChangePhone={(fullPhone) => setForm({ ...form, phone: fullPhone })}
             />
 
-            <View style={styles.passwordWrapper}>
+            <View style={s.passwordWrapper}>
               <TextInput
-                style={styles.passwordInput}
+                style={s.passwordInput}
                 placeholder="Mot de passe (8 car. min)"
+                placeholderTextColor={colors.textPlaceholder}
                 value={form.password}
                 onChangeText={(v) => setForm({ ...form, password: v })}
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
               />
-              <Pressable style={styles.eyeBtn} onPress={() => setShowPassword(!showPassword)}>
-                <Text style={styles.eyeText}>{showPassword ? 'Cacher' : 'Voir'}</Text>
+              <Pressable style={s.eyeBtn} onPress={() => setShowPassword(!showPassword)}>
+                <Text style={s.eyeText}>{showPassword ? 'Cacher' : 'Voir'}</Text>
               </Pressable>
             </View>
 
             <Pressable
-              style={[styles.button, isSendingOtp && { opacity: 0.6 }]}
+              style={[s.button, isSendingOtp && { opacity: 0.6 }]}
               onPress={handleStep1}
               disabled={isSendingOtp}
             >
               {isSendingOtp
-                ? <ActivityIndicator color="#fff" />
-                : <Text style={styles.buttonText}>Continuer → Vérifier le téléphone</Text>}
+                ? <ActivityIndicator color={colors.textOnPrimary} />
+                : <Text style={s.buttonText}>Continuer → Vérifier le téléphone</Text>}
             </Pressable>
 
-            <Pressable onPress={() => router.back()} style={styles.backBtn}>
-              <Text style={styles.backText}>← Retour</Text>
+            <Pressable onPress={() => router.back()} style={s.backBtn}>
+              <Text style={s.backText}>← Retour</Text>
             </Pressable>
           </>
         )}
@@ -169,40 +175,41 @@ export default function RegisterWasherScreen() {
         {/* ─── Étape 2 ─── */}
         {currentStep === 2 && (
           <>
-            <Text style={styles.title}>Votre équipement</Text>
-            <Text style={styles.subtitle}>Étape 2 — Type d'équipement de lavage</Text>
+            <Text style={s.title}>Votre équipement</Text>
+            <Text style={s.subtitle}>Étape 2 — Type d'équipement de lavage</Text>
 
             {EQUIPMENT_OPTIONS.map((opt) => (
               <Pressable
                 key={opt.value}
-                style={[styles.equipCard, equipmentType === opt.value && styles.equipCardActive]}
+                style={[s.equipCard, equipmentType === opt.value && s.equipCardActive]}
                 onPress={() => setEquipmentType(opt.value)}
               >
-                <Text style={styles.equipEmoji}>{opt.emoji}</Text>
+                <Text style={s.equipEmoji}>{opt.emoji}</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.equipLabel, equipmentType === opt.value && styles.equipLabelActive]}>
+                  <Text style={[s.equipLabel, equipmentType === opt.value && s.equipLabelActive]}>
                     {opt.label}
                   </Text>
-                  <Text style={styles.equipDesc}>{opt.desc}</Text>
+                  <Text style={s.equipDesc}>{opt.desc}</Text>
                 </View>
-                <View style={[styles.radio, equipmentType === opt.value && styles.radioActive]}>
-                  {equipmentType === opt.value && <View style={styles.radioDot} />}
+                <View style={[s.radio, equipmentType === opt.value && s.radioActive]}>
+                  {equipmentType === opt.value && <View style={s.radioDot} />}
                 </View>
               </Pressable>
             ))}
 
             {equipmentType && equipmentType !== 'MOBILE' && (
               <TextInput
-                style={[styles.input, { marginTop: 12 }]}
+                style={[s.input, { marginTop: 12 }]}
                 placeholder="Plaque d'immatriculation"
+                placeholderTextColor={colors.textPlaceholder}
                 value={licensePlate}
                 onChangeText={setLicensePlate}
                 autoCapitalize="characters"
               />
             )}
 
-            <Pressable style={styles.button} onPress={handleStep2}>
-              <Text style={styles.buttonText}>Continuer →</Text>
+            <Pressable style={s.button} onPress={handleStep2}>
+              <Text style={s.buttonText}>Continuer →</Text>
             </Pressable>
           </>
         )}
@@ -210,42 +217,42 @@ export default function RegisterWasherScreen() {
         {/* ─── Étape 3 ─── */}
         {currentStep === 3 && (
           <>
-            <Text style={styles.title}>Pièce d'identité</Text>
-            <Text style={styles.subtitle}>Étape 3 — Photo de votre CIN</Text>
+            <Text style={s.title}>Pièce d'identité</Text>
+            <Text style={s.subtitle}>Étape 3 — Photo de votre CIN</Text>
 
-            <View style={styles.cinInfo}>
-              <Text style={styles.cinInfoText}>
+            <View style={s.cinInfo}>
+              <Text style={s.cinInfoText}>
                 📋 Prenez une photo claire de votre Carte d'Identité Nationale.{'\n'}
                 Elle sera vérifiée par notre équipe dans les 24h.
               </Text>
             </View>
 
             {cinPhoto ? (
-              <View style={styles.cinPreview}>
-                <Image source={{ uri: cinPhoto }} style={styles.cinImage} resizeMode="cover" />
-                <Pressable style={styles.retakeBtn} onPress={pickCinPhoto}>
-                  <Text style={styles.retakeText}>📷 Reprendre la photo</Text>
+              <View style={s.cinPreview}>
+                <Image source={{ uri: cinPhoto }} style={s.cinImage} resizeMode="cover" />
+                <Pressable style={s.retakeBtn} onPress={pickCinPhoto}>
+                  <Text style={s.retakeText}>📷 Reprendre la photo</Text>
                 </Pressable>
               </View>
             ) : (
-              <Pressable style={styles.cinBtn} onPress={pickCinPhoto}>
-                <Text style={styles.cinBtnEmoji}>📷</Text>
-                <Text style={styles.cinBtnText}>Prendre une photo de ma CIN</Text>
+              <Pressable style={s.cinBtn} onPress={pickCinPhoto}>
+                <Text style={s.cinBtnEmoji}>📷</Text>
+                <Text style={s.cinBtnText}>Prendre une photo de ma CIN</Text>
               </Pressable>
             )}
 
             <Pressable
-              style={[styles.button, (!cinPhoto || mutation.isPending) && { opacity: 0.6 }]}
+              style={[s.button, (!cinPhoto || mutation.isPending) && { opacity: 0.6 }]}
               onPress={handleStep3}
               disabled={!cinPhoto || mutation.isPending}
             >
               {mutation.isPending
-                ? <ActivityIndicator color="#fff" />
-                : <Text style={styles.buttonText}>Envoyer ma demande ✅</Text>}
+                ? <ActivityIndicator color={colors.textOnPrimary} />
+                : <Text style={s.buttonText}>Envoyer ma demande ✅</Text>}
             </Pressable>
 
-            <Pressable onPress={() => setStep(2)} style={styles.backBtn}>
-              <Text style={styles.backText}>← Étape précédente</Text>
+            <Pressable onPress={() => setStep(2)} style={s.backBtn}>
+              <Text style={s.backText}>← Étape précédente</Text>
             </Pressable>
           </>
         )}
@@ -254,63 +261,63 @@ export default function RegisterWasherScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = (colors: AppColors) => StyleSheet.create({
   progressBar: { flexDirection: 'row', gap: 8, padding: 20, paddingBottom: 0 },
-  progressStep: { flex: 1, height: 4, borderRadius: 2, backgroundColor: '#E0E0E0' },
-  progressStepActive: { backgroundColor: '#0066FF' },
+  progressStep: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.border },
+  progressStepActive: { backgroundColor: colors.primary },
   container: { padding: 24, paddingTop: 24, flexGrow: 1 },
   title: { fontSize: 26, fontWeight: '700', marginBottom: 4 },
-  subtitle: { fontSize: 14, color: '#666', marginBottom: 24 },
+  subtitle: { fontSize: 14, color: colors.textSecondary, marginBottom: 24 },
   input: {
-    backgroundColor: '#F4F5F7', padding: 16,
+    backgroundColor: colors.inputBackground, padding: 16,
     borderRadius: 12, marginBottom: 12, fontSize: 16,
   },
   passwordWrapper: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#F4F5F7', borderRadius: 12,
+    backgroundColor: colors.inputBackground, borderRadius: 12,
     paddingRight: 4, marginBottom: 12,
   },
   passwordInput: { flex: 1, padding: 16, fontSize: 16 },
   eyeBtn: { paddingHorizontal: 14, paddingVertical: 12 },
-  eyeText: { color: '#0066FF', fontSize: 13, fontWeight: '600' },
+  eyeText: { color: colors.primary, fontSize: 13, fontWeight: '600' },
   equipCard: {
     flexDirection: 'row', alignItems: 'center', padding: 16,
-    backgroundColor: '#F4F5F7', borderRadius: 14, marginBottom: 10,
+    backgroundColor: colors.inputBackground, borderRadius: 14, marginBottom: 10,
     borderWidth: 2, borderColor: 'transparent', gap: 14,
   },
-  equipCardActive: { borderColor: '#0066FF', backgroundColor: '#E8F1FF' },
+  equipCardActive: { borderColor: colors.primary, backgroundColor: '#E8F1FF' },
   equipEmoji: { fontSize: 32 },
-  equipLabel: { fontSize: 16, fontWeight: '700', color: '#333' },
-  equipLabelActive: { color: '#0066FF' },
-  equipDesc: { fontSize: 13, color: '#666', marginTop: 2 },
+  equipLabel: { fontSize: 16, fontWeight: '700', color: colors.text },
+  equipLabelActive: { color: colors.primary },
+  equipDesc: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
   radio: {
     width: 22, height: 22, borderRadius: 11,
-    borderWidth: 2, borderColor: '#999',
+    borderWidth: 2, borderColor: colors.textPlaceholder,
     justifyContent: 'center', alignItems: 'center',
   },
-  radioActive: { borderColor: '#0066FF' },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#0066FF' },
+  radioActive: { borderColor: colors.primary },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary },
   cinInfo: {
     backgroundColor: '#FFF8E1', padding: 16, borderRadius: 12,
     marginBottom: 20, borderWidth: 1, borderColor: '#FFE082',
   },
   cinInfoText: { color: '#664500', fontSize: 14, lineHeight: 20 },
   cinBtn: {
-    backgroundColor: '#F4F5F7', padding: 32, borderRadius: 14,
+    backgroundColor: colors.inputBackground, padding: 32, borderRadius: 14,
     alignItems: 'center', marginBottom: 20,
-    borderWidth: 2, borderColor: '#E0E0E0', borderStyle: 'dashed',
+    borderWidth: 2, borderColor: colors.border, borderStyle: 'dashed',
   },
   cinBtnEmoji: { fontSize: 48, marginBottom: 12 },
-  cinBtnText: { fontSize: 16, color: '#333', fontWeight: '600' },
+  cinBtnText: { fontSize: 16, color: colors.text, fontWeight: '600' },
   cinPreview: { marginBottom: 20, borderRadius: 14, overflow: 'hidden' },
   cinImage: { width: '100%', height: 200 },
-  retakeBtn: { backgroundColor: '#F4F5F7', padding: 12, alignItems: 'center' },
-  retakeText: { color: '#0066FF', fontWeight: '600', fontSize: 14 },
+  retakeBtn: { backgroundColor: colors.inputBackground, padding: 12, alignItems: 'center' },
+  retakeText: { color: colors.primary, fontWeight: '600', fontSize: 14 },
   button: {
-    backgroundColor: '#0066FF', padding: 16,
+    backgroundColor: colors.primary, padding: 16,
     borderRadius: 12, alignItems: 'center', marginTop: 8,
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonText: { color: colors.textOnPrimary, fontSize: 16, fontWeight: '600' },
   backBtn: { marginTop: 16, alignItems: 'center' },
-  backText: { color: '#666', fontSize: 14 },
+  backText: { color: colors.textSecondary, fontSize: 14 },
 });

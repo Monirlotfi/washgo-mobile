@@ -4,17 +4,11 @@ import {
   Alert, ActivityIndicator, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { FirebaseAuthTypes } from '@react-native-firebase/auth';
-import { verifyOtp } from '../../src/services/firebaseAuth';
+import { verifyOtp, sendOtp } from '../../src/services/firebaseAuth';
 
-// Les params passés depuis l'écran précédent
 type OtpParams = {
   phone: string;
-  // Sérialisé en JSON string car expo-router ne passe que des strings
-  confirmationJson: string;
-  // 'client' | 'washer'
   role: string;
-  // Données du formulaire sérialisées
   formDataJson: string;
 };
 
@@ -27,11 +21,6 @@ export default function OtpScreen() {
   const [timeLeft, setTimeLeft] = useState(60);
   const inputs = useRef<(TextInput | null)[]>([]);
 
-  const confirmation: FirebaseAuthTypes.ConfirmationResult = JSON.parse(
-    params.confirmationJson,
-  );
-
-  // Countdown pour renvoyer le code
   useEffect(() => {
     if (timeLeft <= 0) return;
     const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
@@ -43,12 +32,10 @@ export default function OtpScreen() {
     newCode[index] = value;
     setCode(newCode);
 
-    // Auto-focus sur la case suivante
     if (value && index < 5) {
       inputs.current[index + 1]?.focus();
     }
 
-    // Auto-submit quand les 6 chiffres sont saisis
     if (newCode.every((c) => c !== '') && newCode.join('').length === 6) {
       handleVerify(newCode.join(''));
     }
@@ -63,15 +50,14 @@ export default function OtpScreen() {
   const handleVerify = async (fullCode?: string) => {
     const otpCode = fullCode ?? code.join('');
     if (otpCode.length !== 6) {
-      Alert.alert('Erreur', 'Entrez les 6 chiffres du code');
+      Alert.alert('Error', 'Please enter the 6 digit verification code');
       return;
     }
 
     setIsVerifying(true);
     try {
-      const idToken = await verifyOtp(confirmation, otpCode);
+      const idToken = await verifyOtp(otpCode);
 
-      // Navigue vers la suite selon le rôle
       if (params.role === 'washer') {
         router.replace({
           pathname: '/(auth)/register-washer',
@@ -79,7 +65,7 @@ export default function OtpScreen() {
             idToken,
             phone: params.phone,
             formDataJson: params.formDataJson,
-            step: '2', // reprend à l'étape équipement
+            step: '2',
           },
         });
       } else {
@@ -93,11 +79,23 @@ export default function OtpScreen() {
         });
       }
     } catch (err: any) {
-      Alert.alert('Code incorrect', 'Le code saisi est invalide ou expiré.');
+      console.error('Verification failure details:', err);
+      Alert.alert('Invalid Code', 'The code entered is incorrect or expired.');
       setCode(['', '', '', '', '', '']);
       inputs.current[0]?.focus();
     } finally {
       setIsVerifying(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (!params.phone) return;
+    setTimeLeft(60);
+    try {
+      await sendOtp(params.phone);
+    } catch (err) {
+      console.error('Failed to execute OTP resend operation:', err);
+      Alert.alert('Error', 'Unable to resend code at this moment.');
     }
   };
 
@@ -107,28 +105,31 @@ export default function OtpScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.inner}>
-        <Text style={styles.title}>Vérification</Text>
+        <Text style={styles.title}>Verification</Text>
         <Text style={styles.subtitle}>
-          Code envoyé au{'\n'}
+          Code sent to{'\n'}
           <Text style={styles.phone}>{params.phone}</Text>
         </Text>
 
-        {/* Cases OTP */}
+        {/* OTP Inputs */}
         <View style={styles.codeRow}>
-          {code.map((digit, index) => (
-            <TextInput
-              key={index}
-              ref={(ref) => { inputs.current[index] = ref; }}
-              style={[styles.codeInput, digit && styles.codeInputFilled]}
-              value={digit}
-              onChangeText={(v) => handleChange(v.slice(-1), index)}
-              onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
-              keyboardType="number-pad"
-              maxLength={1}
-              selectTextOnFocus
-              autoFocus={index === 0}
-            />
-          ))}
+          {code.map((digit, index) => {
+            const uniqueInputKey = `otp-cell-location-${params.phone || 'auth'}-${index}`;
+            return (
+              <TextInput
+                key={uniqueInputKey}
+                ref={(ref) => { inputs.current[index] = ref; }}
+                style={[styles.codeInput, digit && styles.codeInputFilled]}
+                value={digit}
+                onChangeText={(v) => handleChange(v.slice(-1), index)}
+                onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
+                keyboardType="number-pad"
+                maxLength={1}
+                selectTextOnFocus
+                autoFocus={index === 0}
+              />
+            );
+          })}
         </View>
 
         {isVerifying ? (
@@ -138,28 +139,25 @@ export default function OtpScreen() {
             style={styles.button}
             onPress={() => handleVerify()}
           >
-            <Text style={styles.buttonText}>Vérifier</Text>
+            <Text style={styles.buttonText}>Verify</Text>
           </Pressable>
         )}
 
-        {/* Renvoi du code */}
+        {/* Resend Actions */}
         <Pressable
           style={styles.resendBtn}
           disabled={timeLeft > 0}
-          onPress={() => {
-            setTimeLeft(60);
-            // TODO: renvoyer le code (rappeler sendOtp)
-          }}
+          onPress={handleResendCode}
         >
           <Text style={[styles.resendText, timeLeft > 0 && styles.resendDisabled]}>
             {timeLeft > 0
-              ? `Renvoyer dans ${timeLeft}s`
-              : 'Renvoyer le code'}
+              ? `Resend in ${timeLeft}s`
+              : 'Resend Code'}
           </Text>
         </Pressable>
 
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Modifier le numéro</Text>
+          <Text style={styles.backText}>← Change Phone Number</Text>
         </Pressable>
       </View>
     </KeyboardAvoidingView>

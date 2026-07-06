@@ -10,6 +10,8 @@ export function useBookings() {
   return useQuery({
     queryKey: BOOKINGS_KEY,
     queryFn: bookingsApi.list,
+    staleTime: 10 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
@@ -17,6 +19,8 @@ export function useBookingsHistory() {
   return useQuery({
     queryKey: BOOKINGS_HISTORY_KEY,
     queryFn: bookingsApi.history,
+    staleTime: 30 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }
 
@@ -25,21 +29,30 @@ export function useBooking(id: string | null) {
     queryKey: bookingKey(id ?? ''),
     queryFn: () => bookingsApi.get(id!),
     enabled: !!id,
-    refetchInterval: 5000,
+    staleTime: 3 * 1000,
+    gcTime: 2 * 60 * 1000,
+    refetchInterval: (query) => {
+      if (!query.state.data) return 10000;
+      const activeStatuses = ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS', 'AWAITING_CLIENT_CONFIRMATION'];
+      if (activeStatuses.includes(query.state.data.status)) return 5000;
+      if (query.state.data.status === 'PENDING') return 15000;
+      return false;
+    },
   });
 }
 
 export function useActiveBooking() {
   return useQuery({
-    queryKey: [...BOOKINGS_KEY, 'active'],
-    queryFn: async () => {
-      const list = await bookingsApi.list();
-      const active = list.find((b) =>
+    queryKey: BOOKINGS_KEY,
+    queryFn: bookingsApi.list,
+    staleTime: 10 * 1000,
+    gcTime: 5 * 60 * 1000,
+    select: (data) => {
+      const active = data.find((b) =>
         ['PENDING', 'ACCEPTED', 'ARRIVED', 'IN_PROGRESS', 'AWAITING_CLIENT_CONFIRMATION'].includes(b.status),
       );
       return active ?? null;
     },
-    refetchInterval: 5000,
   });
 }
 
@@ -86,5 +99,7 @@ export function useVehiclePricing(vehicleId: string | null) {
     queryKey: ['booking-pricing', vehicleId],
     queryFn: () => bookingsApi.getPricing(vehicleId!),
     enabled: !!vehicleId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 }
