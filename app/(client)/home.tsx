@@ -20,6 +20,7 @@ import { useVehicles } from '../../src/hooks/useVehicles';
 import { useActiveBooking, useBookingsHistory } from '../../src/hooks/useBookings';
 import { useCarousel } from '../../src/hooks/useCarousel';
 import { useSocket } from '../../src/hooks/useSocket';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 const CAROUSEL_WIDTH = width - 40;
@@ -173,6 +174,12 @@ export default function HomeScreen() {
                         source={{ uri: item.imageUrl }}
                         style={s.slideImg}
                         resizeMode={resizeModeForFit(item.imageFit || 'COVER')}
+                      />
+                      <LinearGradient
+                        colors={['transparent', 'rgba(0,0,0,0.7)']}
+                        start={{ x: 0, y: 0.4 }}
+                        end={{ x: 0, y: 1 }}
+                        style={s.slideGradient}
                       />
                       <View style={[s.slideOverlay, overlayPos]}>
                         <Text style={s.slideTitle}>{item.title}</Text>
@@ -416,6 +423,10 @@ const createStyles = (clr: AppColors) =>
       overflow: 'hidden', backgroundColor: '#000',
     },
     slideImg: { width: '100%', height: '100%', resizeMode: 'cover' },
+    slideGradient: {
+      position: 'absolute', left: 0, right: 0, bottom: 0,
+      height: '60%',
+    },
     slideOverlay: {
       position: 'absolute',
       padding: 14,
