@@ -9,7 +9,7 @@ export function useCarousel() {
     queryFn: carouselApi.getActive,
     staleTime: 0,
     gcTime: 10 * 60 * 1000,
-    refetchInterval: 15 * 1000,
+    refetchInterval: 30 * 1000,
     refetchIntervalInBackground: true,
   });
 }

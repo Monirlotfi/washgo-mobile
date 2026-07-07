@@ -5,6 +5,8 @@ export interface CarouselSlide {
   imageUrl: string;
   title: string;
   subtitle: string | null;
+  textPosition: string;
+  imageFit: string;
   order: number;
   active: boolean;
 }

@@ -19,6 +19,7 @@ import { useColors, AppColors } from '../../src/theme/colors';
 import { useVehicles } from '../../src/hooks/useVehicles';
 import { useActiveBooking, useBookingsHistory } from '../../src/hooks/useBookings';
 import { useCarousel } from '../../src/hooks/useCarousel';
+import { useSocket } from '../../src/hooks/useSocket';
 
 const { width } = Dimensions.get('window');
 const CAROUSEL_WIDTH = width - 40;
@@ -54,6 +55,7 @@ export default function HomeScreen() {
   const activeBooking = useActiveBooking();
   const { data: history } = useBookingsHistory();
   const { data: slides, refetch: refetchCarousel } = useCarousel();
+  useSocket();
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -163,11 +165,16 @@ export default function HomeScreen() {
                 const scale = scrollX.interpolate({
                   inputRange, outputRange: [0.92, 1, 0.92], extrapolate: 'clamp',
                 });
+                const overlayPos = getOverlayPosition(item.textPosition || 'BOTTOM');
                 return (
                   <Animated.View style={[s.slideWrap, { width: CAROUSEL_WIDTH, transform: [{ scale }] }]}>
                     <View style={s.slide}>
-                      <Image source={{ uri: item.imageUrl }} style={s.slideImg} />
-                      <View style={s.slideOverlay}>
+                      <Image
+                        source={{ uri: item.imageUrl }}
+                        style={s.slideImg}
+                        resizeMode={resizeModeForFit(item.imageFit || 'COVER')}
+                      />
+                      <View style={[s.slideOverlay, overlayPos]}>
                         <Text style={s.slideTitle}>{item.title}</Text>
                         {item.subtitle && <Text style={s.slideSub}>{item.subtitle}</Text>}
                       </View>
@@ -303,6 +310,31 @@ export default function HomeScreen() {
   );
 }
 
+import { ViewStyle } from 'react-native';
+
+function getOverlayPosition(pos: string): ViewStyle {
+  switch (pos) {
+    case 'TOP':
+      return { top: 0, left: 0, right: 0, paddingTop: 48, paddingBottom: 14 };
+    case 'LEFT':
+      return { top: 0, left: 0, bottom: 0, width: '50%', paddingTop: 48, justifyContent: 'center' };
+    case 'RIGHT':
+      return { top: 0, right: 0, bottom: 0, width: '50%', paddingTop: 48, justifyContent: 'center' };
+    case 'CENTER':
+      return { top: 0, left: 0, right: 0, justifyContent: 'center', paddingHorizontal: 14 };
+    default:
+      return { bottom: 0, left: 0, right: 0, paddingTop: 48, paddingBottom: 14 };
+  }
+}
+
+function resizeModeForFit(fit: string): 'cover' | 'contain' | 'center' | 'stretch' {
+  switch (fit) {
+    case 'CONTAIN': return 'contain';
+    case 'CENTER': return 'center';
+    default: return 'cover';
+  }
+}
+
 function statusLabel(status: string): string {
   const m: Record<string, string> = {
     PENDING: "Recherche d'un laveur...",
@@ -375,8 +407,8 @@ const createStyles = (clr: AppColors) =>
     },
     slideImg: { width: '100%', height: '100%', resizeMode: 'cover' },
     slideOverlay: {
-      position: 'absolute', bottom: 0, left: 0, right: 0,
-      padding: 14, paddingTop: 48,
+      position: 'absolute',
+      padding: 14,
       backgroundColor: 'rgba(0,0,0,0.4)',
     },
     slideTitle: { color: '#fff', fontSize: 18, fontWeight: '700' },
