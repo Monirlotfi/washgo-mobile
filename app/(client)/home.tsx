@@ -313,6 +313,14 @@ export default function HomeScreen() {
 import { ViewStyle } from 'react-native';
 
 function getOverlayPosition(pos: string): ViewStyle {
+  const match = pos?.match(/^([\d.]+),([\d.]+)$/);
+  if (match) {
+    return {
+      position: 'absolute',
+      left: `${parseFloat(match[1]) * 100}%`,
+      top: `${parseFloat(match[2]) * 100}%`,
+    };
+  }
   switch (pos) {
     case 'TOP':
       return { top: 0, left: 0, right: 0, paddingTop: 48, paddingBottom: 14 };
