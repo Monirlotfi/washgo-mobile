@@ -315,11 +315,13 @@ import { ViewStyle } from 'react-native';
 function getOverlayPosition(pos: string): ViewStyle {
   const match = pos?.match(/^([\d.]+),([\d.]+)$/);
   if (match) {
-    return {
-      position: 'absolute',
-      left: `${parseFloat(match[1]) * 100}%`,
-      top: `${parseFloat(match[2]) * 100}%`,
-    };
+    const x = parseFloat(match[1]);
+    const y = parseFloat(match[2]);
+    if (y < 0.3) return getOverlayPosition('TOP');
+    if (y > 0.7) return getOverlayPosition('BOTTOM');
+    if (x < 0.3) return getOverlayPosition('LEFT');
+    if (x > 0.7) return getOverlayPosition('RIGHT');
+    return getOverlayPosition('CENTER');
   }
   switch (pos) {
     case 'TOP':
