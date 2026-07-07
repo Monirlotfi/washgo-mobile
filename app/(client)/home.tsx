@@ -419,10 +419,19 @@ const createStyles = (clr: AppColors) =>
     slideOverlay: {
       position: 'absolute',
       padding: 14,
-      backgroundColor: 'rgba(0,0,0,0.4)',
     },
-    slideTitle: { color: '#fff', fontSize: 18, fontWeight: '700' },
-    slideSub: { color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 2 },
+    slideTitle: {
+      color: '#fff', fontSize: 18, fontWeight: '700',
+      textShadowColor: 'rgba(0,0,0,0.75)',
+      textShadowOffset: { width: 0, height: 2 },
+      textShadowRadius: 6,
+    },
+    slideSub: {
+      color: '#fff', fontSize: 13, marginTop: 2,
+      textShadowColor: 'rgba(0,0,0,0.75)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 4,
+    },
     dotsRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingTop: 12, gap: 6 },
     dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: clr.border },
     dotActive: { width: 24, height: 6, borderRadius: 3, backgroundColor: clr.primary },
