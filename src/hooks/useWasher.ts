@@ -86,7 +86,15 @@ export function useWasherBooking(id: string | null) {
     gcTime: 2 * 60 * 1000,
     select: (data) => data.find((b) => b.id === id) ?? null,
     enabled: !!id,
-    refetchInterval: 5000,
+    refetchInterval: (query) => {
+      if (!query.state.data) return 5000;
+      const b = query.state.data.find((x) => x.id === id);
+      if (!b) return 15000;
+      const terminal = ['COMPLETED', 'CANCELLED', 'EXPIRED'];
+      if (terminal.includes(b.status)) return false;
+      const active = ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS', 'AWAITING_CLIENT_CONFIRMATION'];
+      return active.includes(b.status) ? 5000 : 15000;
+    },
   });
 }
 

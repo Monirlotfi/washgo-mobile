@@ -7,9 +7,9 @@ export function useCarousel() {
   return useQuery({
     queryKey: CAROUSEL_KEY,
     queryFn: carouselApi.getActive,
-    staleTime: 0,
-    gcTime: 10 * 60 * 1000,
-    refetchInterval: 30 * 1000,
-    refetchIntervalInBackground: true,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchInterval: false,
+    refetchIntervalInBackground: false,
   });
 }

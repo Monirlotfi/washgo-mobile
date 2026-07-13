@@ -43,8 +43,10 @@ export default function WasherDashboard() {
           return;
         }
         const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-        await washerApi.updateLocation(pos.coords.latitude, pos.coords.longitude);
-        await washerApi.setAvailability('AVAILABLE');
+        await Promise.all([
+          washerApi.updateLocation(pos.coords.latitude, pos.coords.longitude),
+          washerApi.setAvailability('AVAILABLE'),
+        ]);
         setIsOnline(true);
       } else {
         await washerApi.setAvailability('OFFLINE');
